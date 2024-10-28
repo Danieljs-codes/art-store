@@ -1,0 +1,65 @@
+generator kysely {
+  provider     = "prisma-kysely"
+  output       = "../app/server/db"
+  fileName     = "types.ts"
+  enumFileName = "enums.ts"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model account {
+  id           String    @id
+  accountId    String
+  providerId   String
+  userId       String
+  accessToken  String?
+  refreshToken String?
+  idToken      String?
+  expiresAt    DateTime? @db.Date
+  password     String?
+  user         user      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "account_userId_user_id_fk")
+}
+
+model session {
+  id        String   @id
+  expiresAt DateTime @db.Date
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "session_userId_user_id_fk")
+}
+
+model user {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime  @db.Date
+  updatedAt     DateTime  @db.Date
+  account       account[]
+  session       session[]
+  artist        artist?
+}
+
+model verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime @db.Date
+}
+
+model artist {
+  id                   String   @id
+  name                 String
+  bio                  String
+  portfolioUrl         String?
+  paystackSubAccountId String
+  createdAt            DateTime @db.Date
+  updatedAt            DateTime @db.Date
+  user                 user     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "artist_userId_user_id_fk")
+  userId               String   @unique
+}

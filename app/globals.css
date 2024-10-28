@@ -1,0 +1,241 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	:root {
+		--light: 223.81 0% 98%;
+		--dark: 223.81 0% 4%;
+		--bg: 0 0% 100%;
+		--fg: 223.81 0% 4%;
+		--primary: 261.81 86% 59%;
+		--primary-fg: 300 100% 100%;
+		--secondary: 225 17% 96%;
+		--secondary-fg: 223.81 0% 4%;
+		--tertiary: 240.01 74% 99%;
+		--tertiary-fg: 219.99 6% 9%;
+		--accent: 261.81 86% 59%;
+		--accent-fg: 300 100% 100%;
+		--accent-subtle: 260 91% 96%;
+		--accent-subtle-fg: 262.37 64% 45%;
+		--overlay: 0 0% 100%;
+		--overlay-fg: 239.93 9% 4%;
+		--muted: 220 63% 98%;
+		--muted-fg: 221.26 7.01% 51%;
+		--success: 161.17 91% 31%;
+		--success-fg: 151.77 82% 96%;
+		--info: 205.77 100% 50%;
+		--info-fg: 0 0% 100%;
+		--danger: 0.01 72% 51%;
+		--danger-fg: 360 86% 97%;
+		--warning: 43.2 96% 56.99%;
+		--warning-fg: 20.91 91% 14.1%;
+		--border: 220 10% 88%;
+		--input: 219.99 15% 88%;
+		--ring: var(--primary);
+		--toggle: 220 8% 79%;
+		--radius: 0.5rem;
+		--primary-chart: 261.17 93% 62%;
+		--secondary-chart: 252.49 94% 85%;
+		--tertiary-chart: 255.6 71% 70%;
+		--highlight-chart: 250.55 64% 88%;
+		--accent-chart: 251.42 89% 95%;
+	}
+
+	.dark {
+		--bg: 221.08 14.02% 3%;
+		--fg: 240.01 74% 99%;
+		--primary: 258.32 90% 66%;
+		--primary-fg: 262.49 100% 99%;
+		--secondary: 216 8% 11%;
+		--secondary-fg: 240.01 8% 94%;
+		--tertiary: 220.01 11% 5%;
+		--tertiary-fg: 240.01 14.02% 97%;
+		--accent: 258.32 90% 66%;
+		--accent-fg: 262.49 100% 99%;
+		--accent-subtle: 258.22 33% 14.02%;
+		--accent-subtle-fg: 250 99% 98%;
+		--overlay: 240.03 6% 6%;
+		--overlay-fg: 223.81 0% 98%;
+		--muted: 222.93 9% 13%;
+		--muted-fg: 221.54 7.01% 61%;
+		--info: 205.77 100% 50%;
+		--info-fg: 0 0% 100%;
+		--success: 161.17 91% 31%;
+		--success-fg: 151.77 82% 96%;
+		--ring: var(--primary);
+		--toggle: 223.7 9% 24%;
+		--border: 222.93 9% 13%;
+		--input: 222.92 9% 14.02%;
+		--primary-chart: 263.88 74% 52%;
+		--secondary-chart: 252.49 94% 85%;
+		--tertiary-chart: 255.6 71% 70%;
+		--highlight-chart: 269.18 97% 85%;
+		--accent-chart: 268.56 99% 92%;
+	}
+}
+
+@layer base {
+	html {
+		@apply scroll-smooth;
+	}
+
+	* {
+		@apply border-border;
+		font-feature-settings: "cv11", "ss01";
+		font-variation-settings: "opsz" 850;
+		text-rendering: optimizeLegibility;
+		scrollbar-width: thin;
+	}
+
+	body {
+		@apply bg-bg text-fg;
+	}
+
+	/* dark mode */
+	.dark {
+		scrollbar-width: thin;
+
+		@media (prefers-color-scheme: dark) {
+			* {
+				scrollbar-width: thin;
+			}
+		}
+	}
+
+	/* Chrome, Edge, and Safari */
+	*::-webkit-scrollbar {
+		width: 8px;
+		height: 8px;
+	}
+
+	*::-webkit-scrollbar-track {
+		background: transparent;
+		border-radius: 5px;
+	}
+
+	*::-webkit-scrollbar-thumb {
+		@apply bg-muted;
+		border-radius: 14px;
+		border: 3px solid transparent;
+	}
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+	transition: background-color 60000000s 0s, color 60000000s 0s;
+}
+
+input[data-autocompleted] {
+	background-color: transparent;
+}
+
+@font-face {
+	font-family: "Geist";
+	src: url(./fonts/GeistVF.woff) format("woff-variations");
+	font-weight: 100 900;
+	font-stretch: 75% 125%;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: "Geist Mono";
+	src: url(./fonts/GeistMonoVF.woff) format("woff-variations");
+	font-weight: 100 900;
+	font-stretch: 75% 125%;
+	font-style: normal;
+}
+
+:root {
+	font-family: Geist, sans-serif;
+}
+
+/* Make clicks pass-through */
+#nprogress {
+	pointer-events: none;
+}
+
+#nprogress .bar {
+	/* biome-ignore lint/correctness/noUnknownFunction: <explanation> */
+	background: theme("colors.primary.DEFAULT");
+
+	position: fixed;
+	z-index: 1031;
+	top: 0;
+	left: 0;
+
+	width: 100%;
+	height: 2px;
+}
+
+/* Fancy blur effect */
+#nprogress .peg {
+	display: block;
+	position: absolute;
+	right: 0px;
+	width: 100px;
+	height: 100%;
+	/* biome-ignore lint/correctness/noUnknownFunction: <explanation> */
+	box-shadow: 0 0 10px theme("colors.primary.DEFAULT"), 0 0 5px
+		/* biome-ignore lint/correctness/noUnknownFunction: <explanation> */
+		theme("colors.primary.DEFAULT");
+	opacity: 1;
+
+	-webkit-transform: rotate(3deg) translate(0px, -4px);
+	-ms-transform: rotate(3deg) translate(0px, -4px);
+	transform: rotate(3deg) translate(0px, -4px);
+}
+
+/* Remove these to get rid of the spinner */
+#nprogress .spinner {
+	display: block;
+	position: fixed;
+	z-index: 1031;
+	top: 15px;
+	right: 15px;
+}
+
+#nprogress .spinner-icon {
+	width: 18px;
+	height: 18px;
+	box-sizing: border-box;
+
+	border: solid 2px transparent;
+	/* biome-ignore lint/correctness/noUnknownFunction: <explanation> */
+	border-top-color: theme("colors.primary.DEFAULT");
+	/* biome-ignore lint/correctness/noUnknownFunction: <explanation> */
+	border-left-color: theme("colors.primary.DEFAULT");
+	border-radius: 50%;
+
+	-webkit-animation: nprogress-spinner 400ms linear infinite;
+	animation: nprogress-spinner 400ms linear infinite;
+}
+
+.nprogress-custom-parent {
+	overflow: hidden;
+	position: relative;
+}
+
+.nprogress-custom-parent #nprogress .spinner,
+.nprogress-custom-parent #nprogress .bar {
+	position: absolute;
+}
+
+@-webkit-keyframes nprogress-spinner {
+	0% {
+		-webkit-transform: rotate(0deg);
+	}
+	100% {
+		-webkit-transform: rotate(360deg);
+	}
+}
+@keyframes nprogress-spinner {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
