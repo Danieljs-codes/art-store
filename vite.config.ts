@@ -19,7 +19,10 @@ export default defineConfig({
 						route("sign-up", "routes/auth/sign-up.tsx");
 					});
 					route("create-artist", "routes/main/create-artist.tsx");
-					route("dashboard", "routes/main/overview.tsx");
+					route("", "routes/main/layout.tsx", () => {
+						route("dashboard", "routes/main/dashboard.tsx");
+						route("artworks", "routes/main/artworks.tsx");
+					});
 				});
 			},
 		}),

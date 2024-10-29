@@ -8,3 +8,6 @@ export const convertToObject = <T extends object>(data: string | object): T => {
 	return JSON.parse(data) as T;
 };
 
+export function convertKoboToNaira(koboAmount: number) {
+	return koboAmount / 100;
+}

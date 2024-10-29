@@ -5,6 +5,7 @@ import type {
 	ValidateBankAndAccountNumberResponse,
 } from "@/types/paystack";
 import { createId } from "@paralleldrive/cuid2";
+import { db } from "./db";
 
 export const getUser = async (headers: Headers) => {
 	const user = await auth.api.getSession({
@@ -147,4 +148,79 @@ export async function verifyBankAccount({
 			error: "Failed to verify bank account",
 		};
 	}
+}
+
+export const getArtist = async (userId: string) => {
+	const artist = await db
+		.selectFrom("artist")
+		.where("artist.userId", "=", userId)
+		.selectAll()
+		.executeTakeFirst();
+
+	if (!artist) {
+		return null;
+	}
+
+	return artist;
+};
+
+export const getUserAndArtist = async (headers: Headers) => {
+	const user = await getUser(headers);
+
+	if (!user) {
+		return null;
+	}
+
+	const artist = await getArtist(user.user.id);
+
+	if (!artist) {
+		return null;
+	}
+
+	return { user, artist };
+};
+
+export async function getRevenueForDateRange({
+	startDate = `${new Date().toISOString().slice(0, 8)}01`, // Start of current month
+	endDate = new Date().toISOString().slice(0, 10), // Current day
+	artistId,
+}: {
+	startDate?: string;
+	endDate?: string;
+	artistId: string;
+}) {
+	const startOfStartDate = new Date(startDate);
+	startOfStartDate.setHours(0, 0, 0, 0);
+
+	const startOfEndDate = new Date(endDate);
+	startOfEndDate.setHours(23, 59, 59, 999);
+
+	const startTime = performance.now();
+	const result = await db
+		.selectFrom("orderItem")
+		.innerJoin("order", "order.id", "orderItem.orderId")
+		.innerJoin("artwork", "artwork.id", "orderItem.artworkId")
+		.select((eb) => [
+			eb.fn
+				.sum("orderItem.amount")
+				.as("total"), // Total sales including platform fee
+			eb.fn
+				.sum("orderItem.artistAmount")
+				.as("artistTotal"), // Total sales minus platform fee
+			eb.fn.count("orderItem.id").as("orderCount"),
+		])
+		.where("artwork.artistId", "=", artistId)
+		.where("order.createdAt", ">=", startOfStartDate)
+		.where("order.createdAt", "<=", startOfEndDate)
+		.executeTakeFirst();
+	const endTime = performance.now();
+	console.log(`Revenue query took ${endTime - startTime}ms`);
+
+	return {
+		revenue: Number(result?.total ?? 0), // Total sales including platform fee
+		artistRevenue: Number(result?.artistTotal ?? 0), // Total sales minus platform fee (artist's actual earnings)
+		orderCount: Number(result?.orderCount ?? 0),
+		startDate: startOfStartDate,
+		endDate: startOfEndDate,
+	};
 }

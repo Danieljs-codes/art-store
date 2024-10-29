@@ -28,6 +28,9 @@
 			},
 			"correctness": {
 				"noChildrenProp": "off"
+			},
+			"style": {
+				"useSelfClosingElements": "off"
 			}
 		}
 	},

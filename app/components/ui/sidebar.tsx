@@ -130,7 +130,7 @@ const Inset = ({ className, ...props }: React.ComponentProps<"main">) => {
       className={cn([
         [
           "relative overflow-hidden flex min-h-svh flex-1 flex-col bg-bg",
-          "md:peer-data-[intent=inset]:ml-0 md:peer-data-[intent=inset]:bg-tertiary md:peer-data-[intent=inset]:rounded-xl",
+          "md:peer-data-[intent=inset]:ml-0 md:peer-data-[intent=inset]:bg-white md:peer-data-[intent=inset]:rounded-xl",
           "peer-data-[intent=inset]:overflow-hidden peer-data-[intent=inset]:border peer-data-[intent=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[intent=inset]:my-2 md:peer-data-[intent=inset]:mr-2",
           "md:peer-data-[intent=sidebar]:overflow-visible"
         ],

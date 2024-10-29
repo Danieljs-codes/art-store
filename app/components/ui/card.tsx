@@ -1,9 +1,9 @@
-import * as React from "react"
+import type * as React from "react"
 
-import { cn } from "@/utils/classes"
 import { tv } from "tailwind-variants"
 
 import { Heading } from "./heading"
+import {cn} from "@ui/primitive";
 
 const card = tv({
   slots: {
@@ -14,7 +14,7 @@ const card = tv({
     title: "sm:leading-6 leading-none klda font-semibold tracking-tight",
     description: "text-base dl2 text-muted-fg sm:text-sm",
     content:
-      "yahnba px-6 pb-6 has-[.t-hea]:bg-secondary/40 has-[table]:p-0 [&:has(table)+.ccvgs8x]:py-5 [&:has(table)]:border-t [&_.t-cel]:px-6 [&_.t-col]:px-6",
+        "yahnba px-6 pb-6 has-[.t-hea]:bg-secondary/40 has-[table]:p-0 [&:has(table)+.ccvgs8x]:py-5 [&:has(table)]:border-t [&_.t-cel]:px-6 [&_.t-col]:px-6",
     footer: "ccvgs8x flex items-center p-6 pt-0"
   }
 })

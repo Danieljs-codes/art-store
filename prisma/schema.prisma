@@ -21,6 +21,9 @@ model account {
   expiresAt    DateTime? @db.Date
   password     String?
   user         user      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "account_userId_user_id_fk")
+
+  @@index([userId])
+  @@index([providerId, accountId]) // Common lookup pattern for OAuth
 }
 
 model session {
@@ -30,6 +33,9 @@ model session {
   userAgent String?
   userId    String
   user      user     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "session_userId_user_id_fk")
+
+  @@index([userId])
+  @@index([expiresAt]) // For cleanup of expired sessions
 }
 
 model user {
@@ -43,6 +49,10 @@ model user {
   account       account[]
   session       session[]
   artist        artist?
+  order         order[]
+  cart          cart[]
+
+  @@index([email]) // For email lookups
 }
 
 model verification {
@@ -50,16 +60,110 @@ model verification {
   identifier String
   value      String
   expiresAt  DateTime @db.Date
+
+  @@index([identifier, value]) // For verification lookups
+  @@index([expiresAt]) // For cleanup of expired verifications
 }
 
 model artist {
-  id                   String   @id
+  id                   String    @id
   name                 String
   bio                  String
   portfolioUrl         String?
   paystackSubAccountId String
-  createdAt            DateTime @db.Date
-  updatedAt            DateTime @db.Date
-  user                 user     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "artist_userId_user_id_fk")
-  userId               String   @unique
+  createdAt            DateTime  @db.Date
+  updatedAt            DateTime  @db.Date
+  user                 user      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "artist_userId_user_id_fk")
+  userId               String    @unique
+  artwork              artwork[]
+
+  @@index([userId])
+  @@index([paystackSubAccountId])
+}
+
+model artwork {
+  id          String      @id
+  title       String
+  description String      @db.Text
+  imageUrls   String[] // Multiple image/previews
+  price       Int // In Smallest currency unit (Kobo)
+  quantity    Int?
+  status      ArtStatus   @default(DRAFT)
+  categories  String[] // Array of categories
+  tags        String[] // Searchable tags
+  createdAt   DateTime    @db.Date
+  updatedAt   DateTime    @db.Date
+  artist      artist      @relation(fields: [artistId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "artwork_artistId_artist_id_fk")
+  artistId    String
+  orderItem   orderItem[]
+  cartItem    cartItem[]
+
+  @@index([artistId])
+  @@index([status]) // For filtering artworks by status
+  @@index([categories]) // For category-based searches
+  @@index([tags]) // For tag-based searches
+  @@index([price]) // For price-based filtering
+}
+
+model order {
+  id          String      @id
+  totalAmount Int // Total amount in smallest currency unit (Kobo)
+  paystackRef String      @unique
+  metadata    Json? // Additional order details
+  buyer       user        @relation(fields: [buyerId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "order_buyerId_user_id_fk")
+  buyerId     String
+  createdAt   DateTime    @db.Date
+  updatedAt   DateTime    @db.Date
+  orderItem   orderItem[]
+
+  @@index([buyerId])
+  @@index([paystackRef])
+  @@index([createdAt]) // For order history queries
+}
+
+model orderItem {
+  id        String   @id
+  orderId   String
+  order     order    @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "orderItem_orderId_order_id_fk")
+  artworkId String
+  artwork   artwork  @relation(fields: [artworkId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "orderItem_artworkId_artwork_id_fk")
+  amount    Int // Amount in smallest currency unit (Kobo)
+  platformFee   Int       // Platform fee for this item
+  artistAmount  Int       // Amount artist receives after platform fee
+  createdAt DateTime @db.Date
+  updatedAt DateTime @db.Date
+
+  @@index([orderId])
+  @@index([artworkId])
+}
+
+model cart {
+  id        String     @id
+  userId    String
+  user      user       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cartItems cartItem[]
+  createdAt DateTime   @db.Date
+  updatedAt DateTime   @db.Date
+
+  @@index([userId])
+}
+
+model cartItem {
+  id        String   @id
+  cartId    String
+  cart      cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  artworkId String
+  artwork   artwork  @relation(fields: [artworkId], references: [id])
+  createdAt DateTime @db.Date
+  updatedAt DateTime @db.Date
+
+  @@unique([cartId, artworkId]) // Prevent duplicate items in cart
+  @@index([cartId])
+  @@index([artworkId])
+}
+
+enum ArtStatus {
+  DRAFT
+  PUBLISHED
+  HIDDEN
 }
