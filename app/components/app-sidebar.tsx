@@ -55,7 +55,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
 			<Sidebar.Header>
 				<Link
 					className="flex items-center group-data-[collapsible=dock]:size-10 group-data-[collapsible=dock]:justify-center gap-x-2"
-					href="/docs/components/layouts/sidebar"
+					href="/"
 				>
 					<Logo iconOnly classNames={{ icon: "size-6" }} />
 					<strong className="font-medium group-data-[collapsible=dock]:hidden">

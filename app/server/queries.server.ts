@@ -224,3 +224,42 @@ export async function getRevenueForDateRange({
 		endDate: startOfEndDate,
 	};
 }
+
+export const getArtistRecentSales = async (artistId: string) => {
+	const startTime = performance.now();
+	const recentSales = await db
+		.selectFrom("orderItem")
+		.innerJoin("order", "order.id", "orderItem.orderId")
+		.innerJoin("artwork", "artwork.id", "orderItem.artworkId")
+		.innerJoin("user", "user.id", "order.buyerId")
+		.select([
+			"order.id as orderId",
+			"order.createdAt",
+			"orderItem.amount",
+			"orderItem.artistAmount",
+			"artwork.title as artworkTitle",
+			"artwork.id as artworkId",
+			"artwork.imageUrls as artworkImage",
+			"user.name as customerName",
+			"user.email as customerEmail",
+		])
+		.where("artwork.artistId", "=", artistId)
+		.orderBy("order.createdAt", "desc")
+		.limit(10)
+		.execute();
+
+	const endTime = performance.now();
+	console.log(`Recent sales query took ${endTime - startTime}ms`);
+
+	return recentSales.map((sale) => ({
+		orderId: sale.orderId,
+		date: sale.createdAt,
+		amount: Number(sale.amount),
+		artistAmount: Number(sale.artistAmount),
+		artworkTitle: sale.artworkTitle,
+		artworkId: sale.artworkId,
+		artworkImage: sale.artworkImage,
+		customerName: sale.customerName,
+		customerEmail: sale.customerEmail,
+	}));
+};

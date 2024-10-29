@@ -7,7 +7,7 @@ import {
 	getUser,
 	supportedBanks,
 	verifyBankAccount,
-} from "@/server/misc.server";
+} from "@/server/queries.server";
 import {
 	useActionData,
 	useLoaderData,

@@ -1,18 +1,26 @@
+import { currencyFormatter } from "@/lib/misc";
 import { redirectWithToast } from "@/lib/utils/redirect.server";
-import { getRevenueForDateRange, getUserAndArtist } from "@/server/misc.server";
+import {
+	getArtistRecentSales,
+	getRevenueForDateRange,
+	getUserAndArtist,
+} from "@/server/queries.server";
 import { MetricCard } from "@components/metric-card";
+import { RecentSalesSkeleton } from "@components/recent-sales-skeleton";
+import { RecentSalesTable } from "@components/recent-sales-table";
 import {
 	type CalendarDate,
 	getLocalTimeZone,
 	parseDate,
 	today,
 } from "@internationalized/date";
-import { useLoaderData, useSearchParams } from "@remix-run/react";
+import { Await, useLoaderData, useSearchParams } from "@remix-run/react";
+import { Card } from "@ui/card";
 import { DateRangePicker } from "@ui/date-range-picker";
 import { Heading } from "@ui/heading";
 import type { LoaderFunctionArgs } from "@vercel/remix";
-import { json } from "@vercel/remix";
-import { useCallback } from "react";
+import { defer } from "@vercel/remix";
+import { Suspense, useCallback } from "react";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
 	const userAndArtist = await getUserAndArtist(request.headers);
@@ -29,13 +37,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 	const startDate = url.searchParams.get("startDate");
 	const endDate = url.searchParams.get("endDate");
 
+	const recentSales = getArtistRecentSales(artist.id);
 	const artistRevenue = await getRevenueForDateRange({
 		startDate: startDate ?? undefined,
 		endDate: endDate ?? undefined,
 		artistId: artist.id,
 	});
 
-	return json({ artistRevenue });
+	return defer({ artistRevenue, recentSales });
 };
 
 const Overview = () => {
@@ -61,6 +70,11 @@ const Overview = () => {
 	const defaultEnd = searchParams.get("endDate")
 		? parseDate(searchParams.get("endDate") as string)
 		: today(getLocalTimeZone());
+
+	// const recentSales = data.recentSales.map((sale) => ({
+	// 	...sale,
+	// 	date: new Date(sale.date),
+	// }));
 
 	return (
 		<div>
@@ -88,12 +102,14 @@ const Overview = () => {
 					title="Total Sales"
 					value={data.artistRevenue.revenue}
 					icon="SalesTag"
+					formatter={currencyFormatter}
 					infoText="Total revenue from all artwork sales during this period, before platform fees are deducted"
 				/>
 				<MetricCard
 					title="Artist Revenue"
 					value={data.artistRevenue.artistRevenue}
 					icon="MoneyReceived"
+					formatter={currencyFormatter}
 					infoText="Total revenue from all artwork sales during this period, after platform fees are deducted"
 				/>
 				<MetricCard
@@ -106,8 +122,32 @@ const Overview = () => {
 					title="Platform Fees"
 					value={data.artistRevenue.revenue - data.artistRevenue.artistRevenue}
 					icon="MoneySent"
+					formatter={currencyFormatter}
 					infoText="Total platform fees deducted from all artwork sales during this period"
 				/>
+			</div>
+			<div className="mt-6">
+				<Card.Header
+					withoutPadding
+					title="Recent Sales"
+					description="View your most recent artwork sales and customer details"
+					classNames={{
+						title: "text-lg font-semibold",
+						description: "text-sm leading-tight",
+					}}
+				/>
+				<Suspense fallback={<RecentSalesSkeleton />}>
+					<Await resolve={data.recentSales}>
+						{(resolvedValue) => (
+							<RecentSalesTable
+								data={resolvedValue.map((sale) => ({
+									...sale,
+									date: new Date(sale.date),
+								}))}
+							/>
+						)}
+					</Await>
+				</Suspense>
 			</div>
 		</div>
 	);

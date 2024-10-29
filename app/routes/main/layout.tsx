@@ -1,5 +1,5 @@
 import { redirectWithToast } from "@/lib/utils/redirect.server";
-import { getUserAndArtist } from "@/server/misc.server";
+import { getUserAndArtist } from "@/server/queries.server";
 import { AppSidebar } from "@components/app-sidebar";
 import { Outlet, useLoaderData } from "@remix-run/react";
 import { Avatar } from "@ui/avatar";
@@ -46,7 +46,7 @@ const DashboardLayout = () => {
 					createdAt: new Date(user.createdAt),
 					updatedAt: new Date(user.updatedAt),
 				}}
-				collapsible="dock"
+				collapsible="offcanvas"
 				intent="inset"
 			/>
 			<Sidebar.Inset>
