@@ -82,7 +82,7 @@ export function ArtworksTable({ artworks }: ArtworksTableProps) {
 
 	return (
 		<Card>
-			<Table>
+			<Table aria-label="Artworks Table">
 				<Table.Header>
 					<Table.Column>ID</Table.Column>
 					<Table.Column isRowHeader>Title</Table.Column>

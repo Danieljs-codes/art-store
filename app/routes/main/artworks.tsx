@@ -4,13 +4,13 @@ import { redirectWithToast } from "@/lib/utils/redirect.server";
 import { getArtistArtworks, getUserAndArtist } from "@/server/queries.server";
 import { ArtworksTable } from "@components/artworks-table";
 import { Icons } from "@components/icons";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useSearchParams } from "@remix-run/react";
 import { Button, buttonStyles } from "@ui/button";
 import { Heading } from "@ui/heading";
 import { SearchField } from "@ui/search-field";
 import { Select } from "@ui/select";
 import { type LoaderFunctionArgs, json, redirect } from "@vercel/remix";
-import { IconPlus } from "justd-icons";
+import { IconChevronLeft, IconChevronRight, IconPlus } from "justd-icons";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
 	const userAndArtist = await getUserAndArtist(request.headers);
@@ -43,8 +43,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 	return json({ artworks, pagination });
 };
-
+// TODO: Add status to search param and DB Query to filter by status
 const Artworks = () => {
+	const [_, setSearchParams] = useSearchParams();
 	const data = useLoaderData<typeof loader>();
 
 	return (
@@ -101,6 +102,51 @@ const Artworks = () => {
 				</div>
 				<div className="mt-4">
 					<ArtworksTable artworks={data.artworks} />
+					{data.pagination.pageCount > 0 && (
+						<div className="mt-2 flex items-center gap-2 justify-between">
+							<Button
+								size="small"
+								appearance="outline"
+								isDisabled={data.pagination.page <= 1}
+								onPress={() =>
+									setSearchParams((prev) => {
+										prev.set(
+											"page",
+											Math.max(1, data.pagination.page - 1).toString(),
+										);
+										return prev;
+									})
+								}
+							>
+								<IconChevronLeft />
+								Previous
+							</Button>
+							<p className="text-sm text-muted-fg font-medium">
+								{data.pagination.page} of {data.pagination.pageCount}{" "}
+								{data.pagination.pageCount === 1 ? "page" : "pages"}
+							</p>
+							<Button
+								size="small"
+								appearance="outline"
+								isDisabled={data.pagination.page >= data.pagination.pageCount}
+								onPress={() =>
+									setSearchParams((prev) => {
+										prev.set(
+											"page",
+											Math.min(
+												data.pagination.pageCount,
+												data.pagination.page + 1,
+											).toString(),
+										);
+										return prev;
+									})
+								}
+							>
+								Next
+								<IconChevronRight />
+							</Button>
+						</div>
+					)}
 				</div>
 			</div>
 		</div>

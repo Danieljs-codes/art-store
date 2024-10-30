@@ -300,7 +300,7 @@ export const getArtistArtworks = async ({
 		pagination: {
 			total: Number(totalCount?.count ?? 0),
 			pageCount: Math.ceil(Number(totalCount?.count ?? 0) / limit),
-			page,
+			page, // Ensure page is at least 1
 			limit,
 		},
 	};
