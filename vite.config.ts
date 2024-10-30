@@ -14,6 +14,7 @@ export default defineConfig({
 				return defineRoutes((route) => {
 					route("/", "routes/index.tsx");
 					route("api/auth/*", "routes/api.auth.$.ts");
+					route("api/uploadthing", "routes/api.uploadthing.ts");
 					route("", "routes/auth/layout.tsx", () => {
 						route("sign-in", "routes/auth/sign-in.tsx");
 						route("sign-up", "routes/auth/sign-up.tsx");
@@ -22,6 +23,7 @@ export default defineConfig({
 					route("", "routes/main/layout.tsx", () => {
 						route("dashboard", "routes/main/dashboard.tsx");
 						route("artworks", "routes/main/artworks.tsx");
+						route("artworks/new", "routes/main/artworks-new.tsx");
 					});
 				});
 			},

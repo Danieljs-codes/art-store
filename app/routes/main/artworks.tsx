@@ -4,7 +4,7 @@ import { redirectWithToast } from "@/lib/utils/redirect.server";
 import { getArtistArtworks, getUserAndArtist } from "@/server/queries.server";
 import { ArtworksTable } from "@components/artworks-table";
 import { Icons } from "@components/icons";
-import { useLoaderData, useSearchParams } from "@remix-run/react";
+import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import { Button, buttonStyles } from "@ui/button";
 import { Heading } from "@ui/heading";
 import { SearchField } from "@ui/search-field";
@@ -61,10 +61,10 @@ const Artworks = () => {
 						artworks that are no longer available.
 					</p>
 				</div>
-				<Button size="small">
+				<Link to="/artworks/new" className={buttonStyles({ size: "small" })}>
 					<IconPlus />
 					Add Artwork
-				</Button>
+				</Link>
 			</div>
 			<div>
 				<div className="flex items-center gap-2">
