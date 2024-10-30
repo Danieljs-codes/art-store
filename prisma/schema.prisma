@@ -122,16 +122,16 @@ model order {
 }
 
 model orderItem {
-  id        String   @id
-  orderId   String
-  order     order    @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "orderItem_orderId_order_id_fk")
-  artworkId String
-  artwork   artwork  @relation(fields: [artworkId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "orderItem_artworkId_artwork_id_fk")
-  amount    Int // Amount in smallest currency unit (Kobo)
-  platformFee   Int       // Platform fee for this item
-  artistAmount  Int       // Amount artist receives after platform fee
-  createdAt DateTime @db.Date
-  updatedAt DateTime @db.Date
+  id           String   @id
+  orderId      String
+  order        order    @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "orderItem_orderId_order_id_fk")
+  artworkId    String
+  artwork      artwork  @relation(fields: [artworkId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "orderItem_artworkId_artwork_id_fk")
+  amount       Int // Amount in smallest currency unit (Kobo)
+  platformFee  Int // Platform fee for this item
+  artistAmount Int // Amount artist receives after platform fee
+  createdAt    DateTime @db.Date
+  updatedAt    DateTime @db.Date
 
   @@index([orderId])
   @@index([artworkId])
@@ -165,5 +165,5 @@ model cartItem {
 enum ArtStatus {
   DRAFT
   PUBLISHED
-  HIDDEN
+  ARCHIVED
 }

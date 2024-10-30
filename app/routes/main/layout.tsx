@@ -13,10 +13,13 @@ import {
 	IconChevronLgDown,
 	IconCirclePerson,
 	IconLogout,
+	IconMoon,
 	IconSearch,
 	IconSettings,
 	IconShield,
+	IconSun,
 } from "justd-icons";
+import { useTheme } from "next-themes";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
 	const userAndArtist = await getUserAndArtist(request.headers);
@@ -37,6 +40,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 const DashboardLayout = () => {
 	const { user, artist, session } = useLoaderData<typeof loader>();
+
+	const { theme, setTheme } = useTheme();
+
+	const toggleTheme = () => {
+		setTheme(theme === "dark" ? "light" : "dark");
+	};
 
 	return (
 		<Sidebar.Provider>
@@ -89,6 +98,11 @@ const DashboardLayout = () => {
 								<Menu.Item className="text-sm" href="/security">
 									<IconShield />
 									Security
+								</Menu.Item>
+								<Menu.Separator />
+								<Menu.Item onAction={toggleTheme} className="text-sm">
+									{theme === "dark" ? <IconSun /> : <IconMoon />}
+									Toggle Theme
 								</Menu.Item>
 								<Menu.Separator />
 								<Menu.Item className="text-sm" href="/sign-out" isDanger>

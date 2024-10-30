@@ -1,3 +1,4 @@
+import { ThemeProvider } from "@components/theme-provider";
 import {
 	Links,
 	Meta,
@@ -96,8 +97,10 @@ export default function App() {
 
 	return (
 		<RouterProvider navigate={navigate} useHref={useHref}>
-			<Outlet />
-			<Toast />
+			<ThemeProvider attribute="class">
+				<Outlet />
+				<Toast />
+			</ThemeProvider>
 		</RouterProvider>
 	);
 }

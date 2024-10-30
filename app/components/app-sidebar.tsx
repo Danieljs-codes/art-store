@@ -12,10 +12,13 @@ import {
 	IconCirclePerson,
 	IconDashboard,
 	IconLogout,
+	IconMoon,
 	IconPeople,
 	IconPersonAdd,
 	IconSettings,
+	IconSun,
 } from "justd-icons";
+import { useTheme } from "next-themes";
 import { Icons } from "./icons";
 import { Logo } from "./logo";
 
@@ -50,6 +53,12 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 
 export function AppSidebar({ user, ...props }: AppSidebarProps) {
 	const pathname = useLocation().pathname;
+	const { theme, setTheme } = useTheme();
+
+	const toggleTheme = () => {
+		setTheme(theme === "dark" ? "light" : "dark");
+	};
+
 	return (
 		<Sidebar {...props}>
 			<Sidebar.Header>
@@ -116,6 +125,11 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
 						<Menu.Item href="#">
 							<IconSettings />
 							Settings
+						</Menu.Item>
+						<Menu.Separator />
+						<Menu.Item onAction={toggleTheme}>
+							{theme === "dark" ? <IconSun /> : <IconMoon />}
+							Toggle Theme
 						</Menu.Item>
 						<Menu.Separator />
 						<Menu.Item href="#">

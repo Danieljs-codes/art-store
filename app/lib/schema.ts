@@ -72,3 +72,24 @@ export const createArtistSchema = z.object({
 });
 
 export type CreateArtistSchema = z.infer<typeof createArtistSchema>;
+
+export const artistArtworksSchema = z.object({
+	page: z
+		.string()
+		.default("1")
+		.transform((val) => {
+			const num = Number.parseInt(val);
+			if (Number.isNaN(num)) return 1;
+			return num;
+		}),
+	limit: z
+		.string()
+		.transform((val) => {
+			const num = Number.parseInt(val);
+			if (Number.isNaN(num)) return 10;
+			return num;
+		})
+		.default("10"),
+});
+
+export type ArtistArtworksSchema = z.infer<typeof artistArtworksSchema>;

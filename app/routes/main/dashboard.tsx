@@ -79,7 +79,7 @@ const Overview = () => {
 	return (
 		<div>
 			<div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center mb-6">
-				<Heading level={2} tracking="tight">
+				<Heading level={1} tracking="tight">
 					Overview
 				</Heading>
 				<DateRangePicker

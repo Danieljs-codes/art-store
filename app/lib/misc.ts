@@ -29,3 +29,10 @@ export function currencyFormatter(value: string | number): string {
 		maximumFractionDigits: 2,
 	}).format(numericValue);
 }
+
+export const statusOptions = [
+	{ label: "All Statuses", value: "all" },
+	{ label: "Active", value: "active" },
+	{ label: "Sold Out", value: "sold-out" },
+	{ label: "Archived", value: "archived" },
+];

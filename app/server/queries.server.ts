@@ -263,3 +263,45 @@ export const getArtistRecentSales = async (artistId: string) => {
 		customerEmail: sale.customerEmail,
 	}));
 };
+
+export const getArtistArtworks = async ({
+	artistId,
+	page = 1,
+	limit = 10,
+}: {
+	artistId: string;
+	page?: number;
+	limit?: number;
+}) => {
+	const startTime = performance.now();
+	const offset = (page - 1) * limit;
+
+	const [artworks, totalCount] = await Promise.all([
+		db
+			.selectFrom("artwork")
+			.where("artistId", "=", artistId)
+			.selectAll()
+			.limit(limit)
+			.offset(offset)
+			.orderBy("createdAt", "desc")
+			.execute(),
+		db
+			.selectFrom("artwork")
+			.where("artistId", "=", artistId)
+			.select(({ fn }) => [fn.countAll().as("count")])
+			.executeTakeFirst(),
+	]);
+
+	const endTime = performance.now();
+	console.log(`Artworks query took ${endTime - startTime}ms`);
+
+	return {
+		artworks,
+		pagination: {
+			total: Number(totalCount?.count ?? 0),
+			pageCount: Math.ceil(Number(totalCount?.count ?? 0) / limit),
+			page,
+			limit,
+		},
+	};
+};

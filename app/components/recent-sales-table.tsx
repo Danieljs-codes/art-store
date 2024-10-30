@@ -21,7 +21,7 @@ interface RecentSalesTableData {
 export const RecentSalesTable = ({ data }: RecentSalesTableData) => {
 	return (
 		<Card>
-			<Table>
+			<Table aria-label="Recent Sales">
 				<Table.Header>
 					<Table.Column>Order ID</Table.Column>
 					<Table.Column isRowHeader>Artwork Name</Table.Column>
