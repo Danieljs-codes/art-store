@@ -12,7 +12,7 @@
 		"push": "prisma db push",
 		"gen": "prisma generate",
 		"push-db": "bun push && bun gen",
-		"studio": "bun prisma studio"
+		"studio": "prisma studio"
 	},
 	"dependencies": {
 		"@biomejs/biome": "^1.9.4",

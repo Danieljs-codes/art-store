@@ -88,7 +88,7 @@ model artwork {
   imageUrls   String[] // Multiple image/previews
   price       Int // In Smallest currency unit (Kobo)
   quantity    Int?
-  status      ArtStatus   @default(DRAFT)
+  status      ArtStatus   @default(PUBLISHED)
   categories  String[] // Array of categories
   tags        String[] // Searchable tags
   createdAt   DateTime    @db.Date
@@ -163,7 +163,6 @@ model cartItem {
 }
 
 enum ArtStatus {
-  DRAFT
   PUBLISHED
   ARCHIVED
 }

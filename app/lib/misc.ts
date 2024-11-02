@@ -1,3 +1,4 @@
+import { createId } from "@paralleldrive/cuid2";
 export const toastKey = "en_toast";
 
 export const convertToObject = <T extends object>(data: string | object): T => {
@@ -36,3 +37,7 @@ export const statusOptions = [
 	{ label: "Sold Out", value: "sold-out" },
 	{ label: "Archived", value: "archived" },
 ];
+
+export const cuid = () => createId();
+
+export const convertNairaToKobo = (nairaAmount: number) => nairaAmount * 100;

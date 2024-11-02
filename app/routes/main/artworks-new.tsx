@@ -1,9 +1,14 @@
+import { convertNairaToKobo } from "@/lib/misc";
+import { createArtworkSchema } from "@/lib/schema";
+import { redirectWithToast } from "@/lib/utils/redirect.server";
+import { createArtwork } from "@/server/mutations.server";
+import { getUser } from "@/server/queries.server";
+import { utapi } from "@/server/uploadthing";
 import { Icons } from "@components/icons";
 import type { DropEvent } from "@react-types/shared";
-import { Link, useSubmit } from "@remix-run/react";
+import { Link, useActionData, useSubmit } from "@remix-run/react";
 import { Button, buttonStyles } from "@ui/button";
 import { Card } from "@ui/card";
-import { Checkbox } from "@ui/checkbox";
 import { DropZone } from "@ui/drop-zone";
 import { Description, Label } from "@ui/field";
 import { FileTrigger } from "@ui/file-trigger";
@@ -15,26 +20,104 @@ import { type ActionFunctionArgs, json } from "@vercel/remix";
 import { IconChevronLeft, IconGallery, IconX } from "justd-icons";
 import { useState } from "react";
 import { isFileDropItem } from "react-aria-components";
+import { toast } from "sonner";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-	console.log(Object.fromEntries(await request.formData()));
+	const user = await getUser(request.headers);
 
-	return json({});
+	if (!user) {
+		return redirectWithToast("/", {
+			intent: "warning",
+			message: "Only artists can create artworks",
+		});
+	}
+	const formData = await request.formData();
+	// We need to handle files separately from other form fields because FormData can contain
+	// multiple entries with the same key (files). Object.fromEntries would only keep the last file.
+
+	// Annoyingly form data converts all values to strings, so we need to convert them back to their original types did that in the zod schema
+	const entries = Array.from(formData.entries());
+	const files = entries
+		.filter(([key]) => key === "files")
+		.map(([_, value]) => value as File);
+	const otherFields = Object.fromEntries(
+		entries.filter(([key]) => key !== "files"),
+	);
+
+	const result = createArtworkSchema.safeParse({ ...otherFields, files });
+
+	if (!result.success) {
+		return json({
+			errors: {
+				form: null,
+				fields: result.error.flatten().fieldErrors,
+			},
+		});
+	}
+
+	// TODO: Upload images to uploadthing
+	const response = await utapi.uploadFiles(result.data.files);
+
+	// Check if any upload failed
+	const hasError = response.some((res) => res.error !== null);
+	if (hasError) {
+		return json({
+			errors: {
+				form: "Failed to upload one or more images",
+				fields: null,
+			},
+		});
+	}
+
+	// Get successful upload URLs
+	const urls = response.map((res) => res.data?.url).filter(Boolean) as string[];
+	if (urls.length === 0 || urls.some((url) => !url)) {
+		return json({
+			errors: {
+				form: "No images were uploaded successfully",
+				fields: null,
+			},
+		});
+	}
+
+	const artworkId = await createArtwork({
+		...result.data,
+		price: convertNairaToKobo(result.data.price),
+		urls,
+		userId: user.user.id,
+	});
+
+	// TODO: Redirect to the new artwork page
+	return redirectWithToast(`/artworks`, {
+		intent: "success",
+		message: "Artwork created successfully",
+	});
 };
 
 const ArtworksNew = () => {
+	const actionData = useActionData<typeof action>();
 	const submit = useSubmit();
 	const [imagePreview, setImagePreviews] = useState<string[]>([]);
 	const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
 	const onDropHandler = async (e: DropEvent) => {
-		const items = e.items
+		const allItems = e.items
 			.filter(isFileDropItem)
-			.filter((item) => item.type === "image/jpeg" || item.type === "image/png")
-			.slice(0, 4);
+			.filter(
+				(item) => item.type === "image/jpeg" || item.type === "image/png",
+			);
+
+		if (allItems.length > 4) {
+			toast.warning("Max of 4 images allowed. Uploading the first 4");
+		}
+
+		const items = allItems.slice(0, 4);
 
 		if (items.length === 0) return;
-		if (imagePreview.length >= 4) return;
+		if (imagePreview.length >= 4) {
+			toast.warning("You can only upload up to 4 images");
+			return;
+		}
 
 		const files = await Promise.all(items.map((item) => item.getFile()));
 		const newPreviews = files.map((file) => URL.createObjectURL(file));
@@ -52,7 +135,10 @@ const ArtworksNew = () => {
 
 	const onSelectHandler = async (e: FileList | null) => {
 		if (!e?.length) return;
-		if (imagePreview.length >= 4) return;
+		if (imagePreview.length >= 4) {
+			toast.warning("You can only upload up to 4 images");
+			return;
+		}
 
 		const files = Array.from(e)
 			.filter((file) => file.type === "image/jpeg" || file.type === "image/png")
@@ -75,9 +161,9 @@ const ArtworksNew = () => {
 		e.preventDefault();
 		const formData = new FormData(e.currentTarget);
 
-		selectedFiles.forEach((file, index) => {
-			formData.append(`file-${index}`, file);
-		});
+		for (const file of selectedFiles) {
+			formData.append("files", file);
+		}
 
 		submit(formData, {
 			method: "post",
@@ -107,7 +193,11 @@ const ArtworksNew = () => {
 					</Card.Description>
 				</Card.Header>
 				<Card.Content>
-					<Form onSubmit={onSubmit} method="post">
+					<Form
+						onSubmit={onSubmit}
+						method="post"
+						validationErrors={actionData?.errors?.fields ?? undefined}
+					>
 						<div className="space-y-5">
 							<TextField
 								name="title"
@@ -135,7 +225,7 @@ const ArtworksNew = () => {
 									currencyDisplay: "narrowSymbol",
 								}}
 								validate={(val) => {
-									if (!val) return "Price is required";
+									if (!val || val === 0) return "Price is required";
 									if (val < 100) return "Price must be at least ₦100";
 								}}
 							/>
@@ -148,7 +238,7 @@ const ArtworksNew = () => {
 									maximumFractionDigits: 0,
 								}}
 								validate={(val) => {
-									if (!val) return "Quantity is required";
+									if (!val || val === 0) return "Quantity is required";
 									if (val < 1) return "Quantity must be at least 1";
 								}}
 							/>
@@ -185,8 +275,12 @@ const ArtworksNew = () => {
 										</Description>
 									</div>
 								</DropZone>
+								{actionData?.errors.fields?.files && (
+									<Description className="text-center leading-tight text-sm text-danger">
+										{actionData.errors.fields.files}
+									</Description>
+								)}
 							</div>
-							<Checkbox name="draft" label="Mark as draft" />
 						</div>
 						<div className="flex gap-2 items-center justify-end mt-6">
 							<Link

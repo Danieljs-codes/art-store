@@ -1,5 +1,4 @@
 export const ArtStatus = {
-    DRAFT: "DRAFT",
     PUBLISHED: "PUBLISHED",
     ARCHIVED: "ARCHIVED"
 } as const;

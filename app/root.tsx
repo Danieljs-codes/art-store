@@ -43,7 +43,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 export function Layout({ children }: { children: React.ReactNode }) {
 	return (
-		<html lang="en" className="font-sans bg-bg antialiased">
+		<html
+			lang="en"
+			className="font-sans bg-bg antialiased"
+			suppressHydrationWarning
+		>
 			<head>
 				<meta charSet="utf-8" />
 				<meta name="viewport" content="width=device-width, initial-scale=1" />

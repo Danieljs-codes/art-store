@@ -4,7 +4,6 @@ import type {
 	SubaccountResponse,
 	ValidateBankAndAccountNumberResponse,
 } from "@/types/paystack";
-import { createId } from "@paralleldrive/cuid2";
 import { db } from "./db";
 
 export const getUser = async (headers: Headers) => {
@@ -14,8 +13,6 @@ export const getUser = async (headers: Headers) => {
 
 	return user;
 };
-
-export const cuid = () => createId();
 
 export const createPaystackSubAccount = async ({
 	accountNumber,

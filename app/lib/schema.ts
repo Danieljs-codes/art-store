@@ -93,3 +93,19 @@ export const artistArtworksSchema = z.object({
 });
 
 export type ArtistArtworksSchema = z.infer<typeof artistArtworksSchema>;
+
+export const createArtworkSchema = z.object({
+	title: z.string().min(1, "Title is required"),
+	description: z.string().min(1, "Description is required"),
+	price: z
+		.string()
+		.transform((val) => Number(val))
+		.pipe(z.number().min(100, "Price must be at least ₦100")),
+	quantity: z
+		.string()
+		.transform((val) => Number(val))
+		.pipe(z.number().min(1, "Quantity is required")),
+	files: z.array(z.instanceof(File)).min(2, "At least 2 images are required"),
+});
+
+export type CreateArtworkSchema = z.infer<typeof createArtworkSchema>;
