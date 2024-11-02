@@ -1,7 +1,12 @@
 import { statusOptions } from "@/lib/misc";
 import { artistArtworksSchema } from "@/lib/schema";
 import { redirectWithToast } from "@/lib/utils/redirect.server";
-import { getArtistArtworks, getUserAndArtist } from "@/server/queries.server";
+import { archiveArtwork, unarchiveArtwork } from "@/server/mutations.server";
+import {
+	getArtistArtworks,
+	getUser,
+	getUserAndArtist,
+} from "@/server/queries.server";
 import { ArtworksTable } from "@components/artworks-table";
 import { Icons } from "@components/icons";
 import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
@@ -9,7 +14,12 @@ import { Button, buttonStyles } from "@ui/button";
 import { Heading } from "@ui/heading";
 import { SearchField } from "@ui/search-field";
 import { Select } from "@ui/select";
-import { type LoaderFunctionArgs, json, redirect } from "@vercel/remix";
+import {
+	type ActionFunctionArgs,
+	type LoaderFunctionArgs,
+	json,
+	redirect,
+} from "@vercel/remix";
 import { IconChevronLeft, IconChevronRight, IconPlus } from "justd-icons";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -42,6 +52,41 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 	});
 
 	return json({ artworks, pagination });
+};
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+	const formData = await request.formData();
+	const intent = formData.get("intent") as "archive" | "unarchive";
+	const user = await getUser(request.headers);
+
+	console.log(intent);
+
+	if (!user) {
+		return redirectWithToast("/", {
+			intent: "warning",
+			message: "You must be logged in to perform this action",
+		});
+	}
+
+	if (intent === "archive") {
+		await archiveArtwork({
+			artworkId: formData.get("artworkId") as string,
+			userId: user.user.id,
+		});
+	} else if (intent === "unarchive") {
+		await unarchiveArtwork({
+			artworkId: formData.get("artworkId") as string,
+			userId: user.user.id,
+		});
+	}
+
+	return redirectWithToast("/artworks", {
+		intent: "success",
+		message:
+			intent === "archive"
+				? "Artwork archived successfully"
+				: "Artwork unarchived successfully",
+	});
 };
 // TODO: Add status to search param and DB Query to filter by status
 const Artworks = () => {

@@ -1,11 +1,15 @@
-import { currencyFormatter } from "@/lib/misc";
+import { convertKoboToNaira, currencyFormatter } from "@/lib/misc";
+import { useSubmit } from "@remix-run/react";
 import { Badge, type BadgeIntents } from "@ui/badge";
 import { Card } from "@ui/card";
+import { Menu } from "@ui/menu";
+import { cn } from "@ui/primitive";
 import { Table } from "@ui/table";
+import { IconDotsVertical } from "justd-icons";
 import { Icons } from "./icons";
 
 type Artwork = {
-	status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+	status: "PUBLISHED" | "ARCHIVED";
 	artistId: string;
 	id: string;
 	title: string;
@@ -26,60 +30,13 @@ interface ArtworksTableProps {
 const getStatusBadgeIntent = (
 	status: Artwork["status"],
 ): BadgeIntents["intent"] => {
-	if (status === "DRAFT") return "warning";
 	if (status === "PUBLISHED") return "success";
 	if (status === "ARCHIVED") return "secondary";
 	return "primary";
 };
 
 export function ArtworksTable({ artworks }: ArtworksTableProps) {
-	// const placeholderArtworks: Artwork[] = [
-	// 	{
-	// 		id: "1",
-	// 		title: "Sunset in Lagos",
-	// 		description: "A beautiful sunset captured in Lagos",
-	// 		imageUrls: ["https://example.com/sunset.jpg"],
-	// 		price: 250000,
-	// 		quantity: 1,
-	// 		status: "PUBLISHED",
-	// 		categories: ["Photography", "Nature"],
-	// 		tags: ["sunset", "lagos", "nature"],
-	// 		artistId: "artist-1",
-	// 		createdAt: "2024-01-15T10:00:00Z",
-	// 		updatedAt: "2024-01-15T10:00:00Z",
-	// 	},
-	// 	{
-	// 		id: "2",
-	// 		title: "Abstract Dreams",
-	// 		description: "An abstract painting exploring dreams",
-	// 		imageUrls: ["https://example.com/abstract.jpg"],
-	// 		price: 500000,
-	// 		quantity: 2,
-	// 		status: "DRAFT",
-	// 		categories: ["Painting", "Abstract"],
-	// 		tags: ["abstract", "dreams", "contemporary"],
-	// 		artistId: "artist-1",
-	// 		createdAt: "2024-01-10T15:30:00Z",
-	// 		updatedAt: "2024-01-12T09:20:00Z",
-	// 	},
-	// 	{
-	// 		id: "3",
-	// 		title: "Urban Life",
-	// 		description: "Street photography capturing city life",
-	// 		imageUrls: ["https://example.com/urban.jpg"],
-	// 		price: 150000,
-	// 		quantity: 5,
-	// 		status: "ARCHIVED",
-	// 		categories: ["Photography", "Urban"],
-	// 		tags: ["street", "city", "people"],
-	// 		artistId: "artist-1",
-	// 		createdAt: "2024-01-05T12:00:00Z",
-	// 		updatedAt: "2024-01-05T12:00:00Z",
-	// 	},
-	// ];
-
-	// if (!artworks?.length) artworks = placeholderArtworks;
-
+	const submit = useSubmit();
 	return (
 		<Card>
 			<Table aria-label="Artworks Table">
@@ -90,6 +47,7 @@ export function ArtworksTable({ artworks }: ArtworksTableProps) {
 					<Table.Column>Quantity</Table.Column>
 					<Table.Column>Status</Table.Column>
 					<Table.Column>Upload Date</Table.Column>
+					<Table.Column />
 				</Table.Header>
 				<Table.Body
 					items={artworks}
@@ -109,7 +67,9 @@ export function ArtworksTable({ artworks }: ArtworksTableProps) {
 						<Table.Row id={item.id}>
 							<Table.Cell>{item.id}</Table.Cell>
 							<Table.Cell>{item.title}</Table.Cell>
-							<Table.Cell>{currencyFormatter(item.price)}</Table.Cell>
+							<Table.Cell>
+								{currencyFormatter(convertKoboToNaira(item.price))}
+							</Table.Cell>
 							<Table.Cell>{item.quantity}</Table.Cell>
 							<Table.Cell>
 								<Badge
@@ -125,6 +85,64 @@ export function ArtworksTable({ artworks }: ArtworksTableProps) {
 									day: "numeric",
 									year: "numeric",
 								})}
+							</Table.Cell>
+							<Table.Cell>
+								<div className="flex justify-end">
+									<Menu>
+										<Menu.Trigger>
+											<IconDotsVertical />
+										</Menu.Trigger>
+										<Menu.Content
+											respectScreen={false}
+											aria-label="Actions"
+											showArrow
+											placement="left"
+										>
+											<Menu.Item className="text-sm">
+												<Icons.FileView />
+												View
+											</Menu.Item>
+											<Menu.Separator />
+											<Menu.Item
+												className={cn(
+													"text-sm",
+													item.status === "ARCHIVED" && "hidden",
+												)}
+												isDanger
+												onAction={() =>
+													submit(
+														{
+															intent: "archive",
+															artworkId: item.id,
+														},
+														{ method: "post" },
+													)
+												}
+											>
+												<Icons.Archive />
+												Archive
+											</Menu.Item>
+											<Menu.Item
+												className={cn(
+													"text-sm",
+													item.status === "PUBLISHED" && "hidden",
+												)}
+												onAction={() =>
+													submit(
+														{
+															intent: "unarchive",
+															artworkId: item.id,
+														},
+														{ method: "post" },
+													)
+												}
+											>
+												<Icons.Restore />
+												Unarchive
+											</Menu.Item>
+										</Menu.Content>
+									</Menu>
+								</div>
 							</Table.Cell>
 						</Table.Row>
 					)}
