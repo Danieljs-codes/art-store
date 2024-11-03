@@ -1,5 +1,6 @@
 import { convertKoboToNaira, currencyFormatter } from "@/lib/misc";
 import { useSubmit } from "@remix-run/react";
+import type schema from "@server/db/schema";
 import { Badge, type BadgeIntents } from "@ui/badge";
 import { Card } from "@ui/card";
 import { Menu } from "@ui/menu";
@@ -8,20 +9,7 @@ import { Table } from "@ui/table";
 import { IconDotsVertical } from "justd-icons";
 import { Icons } from "./icons";
 
-type Artwork = {
-	status: "PUBLISHED" | "ARCHIVED";
-	artistId: string;
-	id: string;
-	title: string;
-	description: string;
-	imageUrls: string[];
-	price: number;
-	quantity: number | null;
-	categories: string[];
-	tags: string[];
-	createdAt: string;
-	updatedAt: string;
-};
+type Artwork = typeof schema.artworks.$inferSelect;
 
 interface ArtworksTableProps {
 	artworks: Artwork[];
@@ -80,7 +68,7 @@ export function ArtworksTable({ artworks }: ArtworksTableProps) {
 								</Badge>
 							</Table.Cell>
 							<Table.Cell>
-								{new Date(item.createdAt).toLocaleDateString("en-US", {
+								{item.createdAt.toLocaleDateString("en-US", {
 									month: "short",
 									day: "numeric",
 									year: "numeric",

@@ -1,57 +1,8 @@
-import { cuid } from "@/lib/misc";
-import type { createArtworkSchema } from "@/lib/schema";
 import { redirectWithToast } from "@/lib/utils/redirect.server";
-import type { z } from "zod";
+import { eq } from "drizzle-orm";
 import { db } from "./db";
+import schema from "./db/schema";
 import { getArtist } from "./queries.server";
-
-export const createArtwork = async ({
-	userId,
-	title,
-	description,
-	price,
-	quantity,
-	urls,
-}: Omit<z.infer<typeof createArtworkSchema>, "files"> & {
-	urls: string[];
-	userId: string;
-}) => {
-	// Validate user is authenticated and an artist
-	const artist = await getArtist(userId);
-	if (!artist) {
-		return redirectWithToast("/", {
-			intent: "warning",
-			message: "You must be an artist to create an artwork",
-		});
-	}
-
-	const startTime = performance.now();
-
-	// Insert new artworks
-	const artwork = await db
-		.insertInto("artwork")
-		.values({
-			id: cuid(),
-			title,
-			description,
-			price,
-			imageUrls: urls,
-			artistId: artist.id,
-			createdAt: new Date(),
-			updatedAt: new Date(),
-			categories: [],
-			tags: [],
-			status: "PUBLISHED",
-			quantity,
-		})
-		.returning(["id"])
-		.executeTakeFirstOrThrow();
-
-	const endTime = performance.now();
-	console.log(`Create artwork took ${endTime - startTime}ms`);
-
-	return artwork.id;
-};
 
 export const archiveArtwork = async ({
 	artworkId,
@@ -71,10 +22,13 @@ export const archiveArtwork = async ({
 
 	// Verify artwork belongs to artist
 	const artwork = await db
-		.selectFrom("artwork")
-		.select("artistId")
-		.where("id", "=", artworkId)
-		.executeTakeFirst();
+		.select({
+			artistId: schema.artworks.artistId,
+		})
+		.from(schema.artworks)
+		.where(eq(schema.artworks.id, artworkId))
+		.limit(1)
+		.then((res) => res[0]);
 
 	if (!artwork) {
 		return redirectWithToast("/artworks", {
@@ -91,10 +45,9 @@ export const archiveArtwork = async ({
 	}
 
 	await db
-		.updateTable("artwork")
+		.update(schema.artworks)
 		.set({ status: "ARCHIVED" })
-		.where("id", "=", artworkId)
-		.execute();
+		.where(eq(schema.artworks.id, artworkId));
 };
 
 export const unarchiveArtwork = async ({
@@ -115,10 +68,14 @@ export const unarchiveArtwork = async ({
 
 	// Verify artwork belongs to artist
 	const artwork = await db
-		.selectFrom("artwork")
-		.select(["artistId", "status"])
-		.where("id", "=", artworkId)
-		.executeTakeFirst();
+		.select({
+			artistId: schema.artworks.artistId,
+			status: schema.artworks.status,
+		})
+		.from(schema.artworks)
+		.where(eq(schema.artworks.id, artworkId))
+		.limit(1)
+		.then((res) => res[0]);
 
 	if (!artwork) {
 		return redirectWithToast("/artworks", {
@@ -140,8 +97,7 @@ export const unarchiveArtwork = async ({
 	}
 
 	await db
-		.updateTable("artwork")
+		.update(schema.artworks)
 		.set({ status: "PUBLISHED" })
-		.where("id", "=", artworkId)
-		.execute();
+		.where(eq(schema.artworks.id, artworkId));
 };

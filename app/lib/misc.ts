@@ -41,3 +41,14 @@ export const statusOptions = [
 export const cuid = () => createId();
 
 export const convertNairaToKobo = (nairaAmount: number) => nairaAmount * 100;
+
+export const ARTWORK_CATEGORIES = [
+	"PAINTING",
+	"DRAWING",
+	"PRINT",
+	"SCULPTURE",
+	"MIXED MEDIA",
+	"TEXTILE",
+	"CERAMIC",
+	"OTHERS",
+] as const;

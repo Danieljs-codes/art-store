@@ -18,6 +18,7 @@
     "paths": {
       "@ui/*": ["./app/components/ui/*"],
       "@components/*": ["./app/components/*"],
+      "@server/*": ["./app/server/*"],
       "@/*": ["./app/*"]
     },
 

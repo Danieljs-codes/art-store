@@ -1,9 +1,9 @@
 import { convertNairaToKobo } from "@/lib/misc";
 import { createArtworkSchema } from "@/lib/schema";
 import { redirectWithToast } from "@/lib/utils/redirect.server";
-import { createArtwork } from "@/server/mutations.server";
-import { getUser } from "@/server/queries.server";
-import { utapi } from "@/server/uploadthing";
+// import { createArtwork } from "@server/mutations.server";
+import { getUser } from "@server/queries.server";
+import { utapi } from "@server/uploadthing";
 import { Icons } from "@components/icons";
 import type { DropEvent } from "@react-types/shared";
 import { Link, useActionData, useSubmit } from "@remix-run/react";

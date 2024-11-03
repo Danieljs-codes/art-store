@@ -146,7 +146,16 @@ const Artworks = () => {
 					</Select>
 				</div>
 				<div className="mt-4">
-					<ArtworksTable artworks={data.artworks} />
+					<ArtworksTable
+						artworks={data.artworks.map((artwork) => ({
+							...artwork,
+							createdAt: new Date(artwork.createdAt),
+							updatedAt: new Date(artwork.updatedAt),
+							yearCreated: artwork.yearCreated
+								? new Date(artwork.yearCreated)
+								: null,
+						}))}
+					/>
 					{data.pagination.pageCount > 0 && (
 						<div className="mt-2 flex items-center gap-2 justify-between">
 							<Button

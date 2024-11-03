@@ -4,7 +4,9 @@ import type {
 	SubaccountResponse,
 	ValidateBankAndAccountNumberResponse,
 } from "@/types/paystack";
+import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { db } from "./db";
+import schema from "./db/schema";
 
 export const getUser = async (headers: Headers) => {
 	const user = await auth.api.getSession({
@@ -149,10 +151,11 @@ export async function verifyBankAccount({
 
 export const getArtist = async (userId: string) => {
 	const artist = await db
-		.selectFrom("artist")
-		.where("artist.userId", "=", userId)
-		.selectAll()
-		.executeTakeFirst();
+		.select()
+		.from(schema.artists)
+		.where(eq(schema.artists.userId, userId))
+		.limit(1)
+		.then((res) => res[0]);
 
 	if (!artist) {
 		return null;
@@ -194,22 +197,27 @@ export async function getRevenueForDateRange({
 
 	const startTime = performance.now();
 	const result = await db
-		.selectFrom("orderItem")
-		.innerJoin("order", "order.id", "orderItem.orderId")
-		.innerJoin("artwork", "artwork.id", "orderItem.artworkId")
-		.select((eb) => [
-			eb.fn
-				.sum("orderItem.amount")
-				.as("total"), // Total sales including platform fee
-			eb.fn
-				.sum("orderItem.artistAmount")
-				.as("artistTotal"), // Total sales minus platform fee
-			eb.fn.count("orderItem.id").as("orderCount"),
-		])
-		.where("artwork.artistId", "=", artistId)
-		.where("order.createdAt", ">=", startOfStartDate)
-		.where("order.createdAt", "<=", startOfEndDate)
-		.executeTakeFirst();
+		.select({
+			total: sql<number>`sum(${schema.purchases.amount})`,
+			artistTotal: sql<number>`sum(${schema.purchases.artistEarnings})`,
+			orderCount: sql<number>`count(${schema.purchases.id})`,
+		})
+		.from(schema.purchases)
+		.innerJoin(schema.orders, eq(schema.orders.id, schema.purchases.orderId))
+		.innerJoin(
+			schema.artworks,
+			eq(schema.artworks.id, schema.purchases.artworkId),
+		)
+		.where(
+			and(
+				eq(schema.artworks.artistId, artistId),
+				gte(schema.orders.createdAt, startOfStartDate),
+				lte(schema.orders.createdAt, startOfEndDate),
+			),
+		)
+		.limit(1)
+		.then((res) => res[0]);
+
 	const endTime = performance.now();
 	console.log(`Revenue query took ${endTime - startTime}ms`);
 
@@ -225,25 +233,27 @@ export async function getRevenueForDateRange({
 export const getArtistRecentSales = async (artistId: string) => {
 	const startTime = performance.now();
 	const recentSales = await db
-		.selectFrom("orderItem")
-		.innerJoin("order", "order.id", "orderItem.orderId")
-		.innerJoin("artwork", "artwork.id", "orderItem.artworkId")
-		.innerJoin("user", "user.id", "order.buyerId")
-		.select([
-			"order.id as orderId",
-			"order.createdAt",
-			"orderItem.amount",
-			"orderItem.artistAmount",
-			"artwork.title as artworkTitle",
-			"artwork.id as artworkId",
-			"artwork.imageUrls as artworkImage",
-			"user.name as customerName",
-			"user.email as customerEmail",
-		])
-		.where("artwork.artistId", "=", artistId)
-		.orderBy("order.createdAt", "desc")
-		.limit(10)
-		.execute();
+		.select({
+			orderId: schema.orders.id,
+			createdAt: schema.orders.createdAt,
+			amount: schema.purchases.amount,
+			artistAmount: schema.purchases.artistEarnings,
+			artworkTitle: schema.artworks.title,
+			artworkId: schema.artworks.id,
+			artworkImage: schema.artworks.images,
+			customerName: schema.users.name,
+			customerEmail: schema.users.email,
+		})
+		.from(schema.purchases)
+		.innerJoin(schema.orders, eq(schema.orders.id, schema.purchases.orderId))
+		.innerJoin(
+			schema.artworks,
+			eq(schema.artworks.id, schema.purchases.artworkId),
+		)
+		.innerJoin(schema.users, eq(schema.users.id, schema.orders.buyerId))
+		.where(eq(schema.artworks.artistId, artistId))
+		.orderBy(desc(schema.orders.createdAt))
+		.limit(10);
 
 	const endTime = performance.now();
 	console.log(`Recent sales query took ${endTime - startTime}ms`);
@@ -275,18 +285,18 @@ export const getArtistArtworks = async ({
 
 	const [artworks, totalCount] = await Promise.all([
 		db
-			.selectFrom("artwork")
-			.where("artistId", "=", artistId)
-			.selectAll()
+			.select()
+			.from(schema.artworks)
+			.where(eq(schema.artworks.artistId, artistId))
 			.limit(limit)
 			.offset(offset)
-			.orderBy("createdAt", "desc")
-			.execute(),
+			.orderBy(desc(schema.artworks.createdAt)),
 		db
-			.selectFrom("artwork")
-			.where("artistId", "=", artistId)
-			.select(({ fn }) => [fn.countAll().as("count")])
-			.executeTakeFirst(),
+			.select({
+				count: sql<number>`count(*)`,
+			})
+			.from(schema.artworks)
+			.where(eq(schema.artworks.artistId, artistId)),
 	]);
 
 	const endTime = performance.now();
@@ -295,9 +305,9 @@ export const getArtistArtworks = async ({
 	return {
 		artworks,
 		pagination: {
-			total: Number(totalCount?.count ?? 0),
-			pageCount: Math.ceil(Number(totalCount?.count ?? 0) / limit),
-			page, // Ensure page is at least 1
+			total: Number(totalCount[0]?.count ?? 0),
+			pageCount: Math.ceil(Number(totalCount[0]?.count ?? 0) / limit),
+			page,
 			limit,
 		},
 	};
