@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ARTWORK_CATEGORIES } from "./misc";
 
 export const SignInSchema = z.object({
 	email: z.string().email({ message: "Invalid email address" }),
@@ -105,6 +106,25 @@ export const createArtworkSchema = z.object({
 		.string()
 		.transform((val) => Number(val))
 		.pipe(z.number().min(1, "Quantity is required")),
+	category: z.enum(ARTWORK_CATEGORIES, {
+		required_error: "Category is required",
+	}),
+	dimensions: z
+		.string()
+		.min(1, "Dimensions are required")
+		.refine(
+			(val) => /^\d+x\d+\s*(cm|in)$/i.test(val),
+			"Please use format: 20x30 cm or 20x30 in",
+		),
+	materials: z
+		.string()
+		.min(3, "Please provide more detail about materials used"),
+	weight: z
+		.string()
+		.transform((val) => Number(val))
+		.pipe(z.number().min(0.1, "Weight must be at least 0.1kg"))
+		.optional(),
+	frameType: z.string().optional(),
 	files: z.array(z.instanceof(File)).min(2, "At least 2 images are required"),
 });
 

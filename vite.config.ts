@@ -24,6 +24,7 @@ export default defineConfig({
 						route("dashboard", "routes/main/dashboard.tsx");
 						route("artworks", "routes/main/artworks.tsx");
 						route("artworks/new", "routes/main/artworks-new.tsx");
+						route("artworks/:id", "routes/main/artworks-details.tsx");
 					});
 				});
 			},

@@ -1,9 +1,8 @@
 import { createArtistSchema } from "@/lib/schema";
 import { redirectWithToast } from "@/lib/utils/redirect.server";
-import { db } from "@/server/db";
 import {
 	createPaystackSubAccount,
-	cuid,
+	getArtist,
 	getUser,
 	supportedBanks,
 	verifyBankAccount,
@@ -14,6 +13,8 @@ import {
 	useNavigation,
 	useSubmit,
 } from "@remix-run/react";
+import { db } from "@server/db";
+import schema from "@server/db/schema";
 import { Button } from "@ui/button";
 import { Form } from "@ui/form";
 import { Loader } from "@ui/loader";
@@ -65,11 +66,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 	}
 
 	// Check if existing user has no artist profile
-	const existingUser = await db
-		.selectFrom("artist")
-		.where("artist.userId", "=", user.user.id)
-		.selectAll()
-		.executeTakeFirst();
+	const existingUser = await getArtist(user.user.id);
 
 	if (existingUser) {
 		return redirectWithToast("/dashboard", {
@@ -106,11 +103,7 @@ export const action = async ({
 	}
 
 	// Check for existing artist profile
-	const existingUser = await db
-		.selectFrom("artist")
-		.where("artist.userId", "=", user.user.id)
-		.selectAll()
-		.executeTakeFirst();
+	const existingUser = await getArtist(user.user.id);
 
 	if (existingUser) {
 		return redirectWithToast("/dashboard", {
@@ -168,19 +161,13 @@ export const action = async ({
 	}
 
 	// Create artist record
-	await db
-		.insertInto("artist")
-		.values({
-			id: cuid(),
-			name: result.data.artistName,
-			portfolioUrl: result.data.portfolioUrl,
-			bio: result.data.artistBio,
-			createdAt: new Date(),
-			updatedAt: new Date(),
-			userId: user.user.id,
-			paystackSubAccountId: payStackRes.data.subaccount_code,
-		})
-		.executeTakeFirstOrThrow();
+	await db.insert(schema.artists).values({
+		name: result.data.artistName,
+		portfolioUrl: result.data.portfolioUrl,
+		bio: result.data.artistBio,
+		userId: user.user.id,
+		paystackSubAccountId: payStackRes.data.subaccount_code,
+	});
 
 	return redirectWithToast("/dashboard", {
 		intent: "success",

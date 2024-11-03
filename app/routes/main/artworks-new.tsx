@@ -1,19 +1,27 @@
-import { convertNairaToKobo } from "@/lib/misc";
+import { ARTWORK_CATEGORIES, convertNairaToKobo } from "@/lib/misc";
 import { createArtworkSchema } from "@/lib/schema";
 import { redirectWithToast } from "@/lib/utils/redirect.server";
+import { Icons } from "@components/icons";
+import type { DropEvent } from "@react-types/shared";
+import {
+	Link,
+	useActionData,
+	useNavigation,
+	useSubmit,
+} from "@remix-run/react";
+import { createArtwork } from "@server/mutations.server";
 // import { createArtwork } from "@server/mutations.server";
 import { getUser } from "@server/queries.server";
 import { utapi } from "@server/uploadthing";
-import { Icons } from "@components/icons";
-import type { DropEvent } from "@react-types/shared";
-import { Link, useActionData, useSubmit } from "@remix-run/react";
 import { Button, buttonStyles } from "@ui/button";
 import { Card } from "@ui/card";
 import { DropZone } from "@ui/drop-zone";
 import { Description, Label } from "@ui/field";
 import { FileTrigger } from "@ui/file-trigger";
 import { Form } from "@ui/form";
+import { Loader } from "@ui/loader";
 import { NumberField } from "@ui/number-field";
+import { Select } from "@ui/select";
 import { TextField } from "@ui/text-field";
 import { Textarea } from "@ui/textarea";
 import { type ActionFunctionArgs, json } from "@vercel/remix";
@@ -32,6 +40,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 		});
 	}
 	const formData = await request.formData();
+
 	// We need to handle files separately from other form fields because FormData can contain
 	// multiple entries with the same key (files). Object.fromEntries would only keep the last file.
 
@@ -82,6 +91,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 	const artworkId = await createArtwork({
 		...result.data,
+		category: result.data.category,
 		price: convertNairaToKobo(result.data.price),
 		urls,
 		userId: user.user.id,
@@ -95,6 +105,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 const ArtworksNew = () => {
+	const navigation = useNavigation();
+	const isSubmitting =
+		navigation.state === "submitting" &&
+		navigation.formAction === "/artworks/new";
 	const actionData = useActionData<typeof action>();
 	const submit = useSubmit();
 	const [imagePreview, setImagePreviews] = useState<string[]>([]);
@@ -242,6 +256,72 @@ const ArtworksNew = () => {
 									if (val < 1) return "Quantity must be at least 1";
 								}}
 							/>
+							<Select
+								name="category"
+								label="Category"
+								placeholder="Select a category"
+								validate={(val) => {
+									if (!val) return "Category is required";
+								}}
+							>
+								<Select.Trigger />
+								<Select.List
+									items={ARTWORK_CATEGORIES.map((category) => ({
+										value: category,
+										label: category,
+									}))}
+								>
+									{(category) => (
+										<Select.Option
+											id={category.value}
+											textValue={category.label}
+											className="text-sm capitalize"
+										>
+											{category.label.toLowerCase()}
+										</Select.Option>
+									)}
+								</Select.List>
+							</Select>
+							<TextField
+								name="dimensions"
+								label="Dimensions"
+								placeholder="e.g. 20x30 cm"
+								validate={(val) => {
+									if (!val) return "Dimensions are required";
+									if (!/^\d+x\d+\s*(cm|in)$/i.test(val))
+										return "Please use format: 20x30 cm or 20x30 in";
+								}}
+							/>
+							<TextField
+								name="materials"
+								label="Materials"
+								placeholder="e.g. Canvas, Acrylic, etc."
+								validate={(val) => {
+									if (!val) return "Materials are required";
+									if (val.length < 3)
+										return "Please provide more detail about materials used";
+								}}
+							/>
+							<NumberField
+								name="weight"
+								label="Weight (Optional)"
+								placeholder="e.g. 2.5"
+								description="Enter the weight in kilograms (kg). For example, 2.5 kg for a medium-sized painting."
+								descriptionClassName="text-xs"
+								validate={(val) => {
+									if (val && (val < 0.1 || val > 100))
+										return "Weight must be between 0.1 and 100 kg";
+								}}
+							/>
+							<TextField
+								name="frameType"
+								label="Frame Type (Optional)"
+								placeholder="e.g. Wooden, Metal, etc."
+								validate={(val) => {
+									if (val && val.length < 3)
+										return "Please provide more detail about the frame type";
+								}}
+							/>
 							<div>
 								<Label htmlFor="artwork-images" className="mb-1 inline-block">
 									Artwork Images
@@ -292,8 +372,17 @@ const ArtworksNew = () => {
 							>
 								Cancel
 							</Link>
-							<Button size="small" type="submit">
-								Submit
+							<Button isPending={isSubmitting} size="small" type="submit">
+								{({ isPending }) =>
+									isPending ? (
+										<>
+											<Loader variant="spin" />
+											Submitting
+										</>
+									) : (
+										"Submit"
+									)
+								}
 							</Button>
 						</div>
 					</Form>

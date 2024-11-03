@@ -101,3 +101,55 @@ export const unarchiveArtwork = async ({
 		.set({ status: "PUBLISHED" })
 		.where(eq(schema.artworks.id, artworkId));
 };
+
+type CreateArtworkData = {
+	title: string;
+	description: string;
+	price: number;
+	quantity: number;
+	category:
+		| "PAINTING"
+		| "DRAWING"
+		| "PRINT"
+		| "SCULPTURE"
+		| "MIXED MEDIA"
+		| "TEXTILE"
+		| "CERAMIC"
+		| "OTHERS";
+	dimensions: string;
+	materials: string;
+	weight?: number;
+	frameType?: string;
+	urls: string[];
+	userId: string;
+};
+
+export const createArtwork = async (data: CreateArtworkData) => {
+	const artist = await getArtist(data.userId);
+	if (!artist) {
+		return redirectWithToast("/", {
+			intent: "warning",
+			message: "You must be an artist to create artworks",
+		});
+	}
+
+	const artwork = await db
+		.insert(schema.artworks)
+		.values({
+			title: data.title,
+			description: data.description,
+			price: data.price,
+			quantity: data.quantity,
+			category: data.category,
+			dimensions: data.dimensions,
+			medium: data.materials,
+			weight: data.weight,
+			frameType: data.frameType,
+			images: data.urls,
+			artistId: artist.id,
+		})
+		.returning({ id: schema.artworks.id })
+		.then((res) => res[0]);
+
+	return artwork.id;
+};

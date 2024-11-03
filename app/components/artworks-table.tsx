@@ -19,7 +19,7 @@ const getStatusBadgeIntent = (
 	status: Artwork["status"],
 ): BadgeIntents["intent"] => {
 	if (status === "PUBLISHED") return "success";
-	if (status === "ARCHIVED") return "secondary";
+	if (status === "ARCHIVED") return "warning";
 	return "primary";
 };
 
@@ -31,7 +31,10 @@ export function ArtworksTable({ artworks }: ArtworksTableProps) {
 				<Table.Header>
 					<Table.Column>ID</Table.Column>
 					<Table.Column isRowHeader>Title</Table.Column>
+					<Table.Column>Category</Table.Column>
 					<Table.Column>Price</Table.Column>
+					<Table.Column>Dimensions</Table.Column>
+					<Table.Column>Medium</Table.Column>
 					<Table.Column>Quantity</Table.Column>
 					<Table.Column>Status</Table.Column>
 					<Table.Column>Upload Date</Table.Column>
@@ -54,12 +57,25 @@ export function ArtworksTable({ artworks }: ArtworksTableProps) {
 					{(item) => (
 						<Table.Row id={item.id}>
 							<Table.Cell>{item.id}</Table.Cell>
-							<Table.Cell>{item.title}</Table.Cell>
+							<Table.Cell className="capitalize">
+								{item.title.toLowerCase()}
+							</Table.Cell>
+							<Table.Cell className="capitalize">
+								<Badge intent="secondary" className="capitalize">
+									{item.category.toLowerCase()}
+								</Badge>
+							</Table.Cell>
 							<Table.Cell>
 								{currencyFormatter(convertKoboToNaira(item.price))}
 							</Table.Cell>
-							<Table.Cell>{item.quantity}</Table.Cell>
-							<Table.Cell>
+							<Table.Cell className="">
+								{item.dimensions.toLowerCase()}
+							</Table.Cell>
+							<Table.Cell className="capitalize">
+								{item.medium.toLowerCase()}
+							</Table.Cell>
+							<Table.Cell className="capitalize">{item.quantity}</Table.Cell>
+							<Table.Cell className="capitalize">
 								<Badge
 									intent={getStatusBadgeIntent(item.status)}
 									className="capitalize"
@@ -67,14 +83,14 @@ export function ArtworksTable({ artworks }: ArtworksTableProps) {
 									{item.status.toLowerCase()}
 								</Badge>
 							</Table.Cell>
-							<Table.Cell>
+							<Table.Cell className="capitalize">
 								{item.createdAt.toLocaleDateString("en-US", {
 									month: "short",
 									day: "numeric",
 									year: "numeric",
 								})}
 							</Table.Cell>
-							<Table.Cell>
+							<Table.Cell className="capitalize">
 								<div className="flex justify-end">
 									<Menu>
 										<Menu.Trigger>
@@ -86,10 +102,17 @@ export function ArtworksTable({ artworks }: ArtworksTableProps) {
 											showArrow
 											placement="left"
 										>
-											<Menu.Item className="text-sm">
+											<Menu.Item
+												className="text-sm"
+												href={`/artworks/${item.id}`}
+											>
 												<Icons.FileView />
-												View
+												View Details
 											</Menu.Item>
+											{/* <Menu.Item className="text-sm">
+												<Icons.Edit />
+												Edit Artwork
+											</Menu.Item> */}
 											<Menu.Separator />
 											<Menu.Item
 												className={cn(

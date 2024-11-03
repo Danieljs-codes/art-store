@@ -28,6 +28,7 @@ interface NumberFieldProps extends NumberFieldPrimitiveProps {
   description?: string
   placeholder?: string
   errorMessage?: string | ((validation: ValidationResult) => string)
+  descriptionClassName?: string
 }
 
 const NumberField = ({
@@ -36,6 +37,7 @@ const NumberField = ({
   description,
   className,
   errorMessage,
+    descriptionClassName,
   ...props
 }: NumberFieldProps) => {
   const isMobile = useMediaQuery("(max-width: 768px)")
@@ -71,7 +73,7 @@ const NumberField = ({
           </>
         )}
       </FieldGroup>
-      {description && <Description>{description}</Description>}
+      {description && <Description className={descriptionClassName}>{description}</Description>}
       <FieldError>{errorMessage}</FieldError>
     </NumberFieldPrimitive>
   )
