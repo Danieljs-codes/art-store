@@ -52,3 +52,7 @@ export const ARTWORK_CATEGORIES = [
 	"CERAMIC",
 	"OTHERS",
 ] as const;
+
+export const toSentenceCase = (str: string) => {
+	return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};

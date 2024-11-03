@@ -120,6 +120,7 @@ export const artworks = pgTable(
 		title: text().notNull(),
 		description: text().notNull(),
 		price: real().notNull(),
+		views: integer().notNull().default(0),
 		quantity: integer().notNull(),
 		category: categoryEnum().notNull(),
 		dimensions: text().notNull(),
