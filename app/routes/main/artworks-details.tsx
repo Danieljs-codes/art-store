@@ -8,6 +8,7 @@ import { Button } from "@ui/button";
 import { Card } from "@ui/card";
 import { Carousel } from "@ui/carousel";
 import { cn } from "@ui/primitive";
+import { Tabs } from "@ui/tabs";
 import { type LoaderFunctionArgs, json, redirect } from "@vercel/remix";
 import { eq } from "drizzle-orm";
 
@@ -158,6 +159,33 @@ const ArtworkDetails = () => {
 						</Card>
 					</div>
 				</div>
+			</div>
+			<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+				<div>
+					<Card>
+						<Card.Content className="py-4">
+							<Tabs>
+								<Tabs.List>
+									<Tabs.Tab id="info">
+										<Icons.InfoCircle />
+										Info
+									</Tabs.Tab>
+									<Tabs.Tab id="stats">
+										<Icons.Chart />
+										Stats
+									</Tabs.Tab>
+								</Tabs.List>
+								<Tabs.Panel id="info">
+									<p>Info</p>
+								</Tabs.Panel>
+								<Tabs.Panel id="stats">
+									<p>Stats</p>
+								</Tabs.Panel>
+							</Tabs>
+						</Card.Content>
+					</Card>
+				</div>
+				<div></div>
 			</div>
 		</div>
 	);
