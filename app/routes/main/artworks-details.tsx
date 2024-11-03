@@ -3,6 +3,7 @@ import { Icons } from "@components/icons";
 import { useLoaderData } from "@remix-run/react";
 import { db } from "@server/db";
 import schema from "@server/db/schema";
+import { Badge } from "@ui/badge";
 import { Button } from "@ui/button";
 import { Card } from "@ui/card";
 import { Carousel } from "@ui/carousel";
@@ -107,32 +108,55 @@ const ArtworkDetails = () => {
 						<Icons.Restore />
 						Unarchive Artwork
 					</Button>
-					<Card className="mt-6">
-						<Card.Header>Quick Stats</Card.Header>
-						<Card.Content>
-							<div className="flex items-center gap-4 justify-between">
-								<div>
-									<p className="text-sm font-muted-fg font-medium">Price</p>
-									<p className="text-base font-bold">
-										{currencyFormatter(convertKoboToNaira(data.artwork.price))}
-									</p>
+					<div className="space-y-5">
+						<Card className="mt-6">
+							<Card.Header>Quick Stats</Card.Header>
+							<Card.Content>
+								<div className="flex items-center gap-4 justify-between">
+									<div>
+										<p className="text-sm font-muted-fg font-medium">Price</p>
+										<p className="text-base font-bold">
+											{currencyFormatter(
+												convertKoboToNaira(data.artwork.price),
+											)}
+										</p>
+									</div>
+									<div>
+										<p className="text-sm font-muted-fg font-medium">Listed</p>
+										<p className="text-base font-bold">
+											{new Date(data.artwork.createdAt).toLocaleDateString(
+												"en-US",
+												{
+													month: "short",
+													day: "numeric",
+													year: "numeric",
+												},
+											)}
+										</p>
+									</div>
 								</div>
-								<div>
-									<p className="text-sm font-muted-fg font-medium">Listed</p>
-									<p className="text-base font-bold">
-										{new Date(data.artwork.createdAt).toLocaleDateString(
-											"en-US",
-											{
-												month: "short",
-												day: "numeric",
-												year: "numeric",
-											},
-										)}
-									</p>
+							</Card.Content>
+						</Card>
+
+						<Card>
+							<Card.Header>Tags</Card.Header>
+							<Card.Content>
+								<div className="flex flex-wrap gap-2">
+									{data.artwork.tags.map((tag) => (
+										<Badge
+											key={tag}
+											shape="circle"
+											className="lowercase"
+											intent="secondary"
+										>
+											<Icons.Tags />
+											{tag}
+										</Badge>
+									))}
 								</div>
-							</div>
-						</Card.Content>
-					</Card>
+							</Card.Content>
+						</Card>
+					</div>
 				</div>
 			</div>
 		</div>

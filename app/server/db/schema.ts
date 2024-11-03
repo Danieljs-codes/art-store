@@ -121,6 +121,7 @@ export const artworks = pgTable(
 		description: text().notNull(),
 		price: real().notNull(),
 		views: integer().notNull().default(0),
+		tags: jsonb().$type<string[]>().notNull().default([]),
 		quantity: integer().notNull(),
 		category: categoryEnum().notNull(),
 		dimensions: text().notNull(),
