@@ -397,16 +397,13 @@ export async function getArtistOrders({
 
 	const baseQuery = db
 		.select({
-			orderId: schema.orders.id,
-			createdAt: schema.orders.createdAt,
-			updatedAt: schema.orders.updatedAt,
-			totalAmount: schema.orders.totalAmount,
-			paymentReference: schema.orders.paymentReference,
-			// Purchase details
 			purchaseId: schema.purchases.id,
+			// Purchase details
 			purchaseStatus: schema.purchases.status,
 			purchaseAmount: schema.purchases.amount,
 			artistEarnings: schema.purchases.artistEarnings,
+			platformFee: schema.purchases.platformFee,
+			purchasedAt: schema.purchases.createdAt,
 			// Artwork details
 			artworkId: schema.artworks.id,
 			artworkTitle: schema.artworks.title,
@@ -453,8 +450,8 @@ export async function getArtistOrders({
 	return {
 		orders: orders.map((order) => ({
 			...order,
-			totalAmount: Number(order.totalAmount),
-			purchaseAmount: Number(order.purchaseAmount),
+			totalAmount: Number(order.purchaseAmount),
+			platformFee: Number(order.platformFee),
 			artistEarnings: Number(order.artistEarnings),
 		})),
 		pagination: {
