@@ -17,10 +17,10 @@ import {
 export const categoryEnum = pgEnum("category", ARTWORK_CATEGORIES);
 export const purchaseStatusEnum = pgEnum("purchase_status", [
 	"PENDING",
-	"PAID",
+	"SHIPPED",
 	"DELIVERED",
-	"CANCELLED",
 ]);
+
 export const artworkStatusEnum = pgEnum("artwork_status", [
 	"ARCHIVED",
 	"PUBLISHED",

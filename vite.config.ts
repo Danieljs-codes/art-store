@@ -25,6 +25,7 @@ export default defineConfig({
 						route("artworks", "routes/main/artworks.tsx");
 						route("artworks/new", "routes/main/artworks-new.tsx");
 						route("artworks/:id", "routes/main/artworks-details.tsx");
+						route("orders", "routes/main/orders.tsx");
 					});
 				});
 			},

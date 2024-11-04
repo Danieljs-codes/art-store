@@ -6,7 +6,7 @@ import type {
 } from "@/types/paystack";
 import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { db } from "./db";
-import { default as schema } from "./db/schema";
+import { type purchaseStatusEnum, default as schema } from "./db/schema";
 
 export const getUser = async (headers: Headers) => {
 	const user = await auth.api.getSession({
@@ -373,4 +373,95 @@ export async function getArtwork({ artworkId }: { artworkId: string }) {
 	if (!artwork.length) return null;
 
 	return artwork[0];
+}
+
+interface GetArtistOrdersParams {
+	artistId: string;
+	page?: number;
+	limit?: number;
+	status?: (typeof purchaseStatusEnum.enumValues)[number];
+}
+
+export async function getArtistOrders({
+	artistId,
+	page = 1,
+	limit = 10,
+	status,
+}: GetArtistOrdersParams) {
+	const offset = (page - 1) * limit;
+	const startTime = performance.now();
+
+	// Build where conditions
+	const conditions = [eq(schema.artworks.artistId, artistId)];
+	if (status) conditions.push(eq(schema.purchases.status, status));
+
+	const baseQuery = db
+		.select({
+			orderId: schema.orders.id,
+			createdAt: schema.orders.createdAt,
+			updatedAt: schema.orders.updatedAt,
+			totalAmount: schema.orders.totalAmount,
+			paymentReference: schema.orders.paymentReference,
+			// Purchase details
+			purchaseId: schema.purchases.id,
+			purchaseStatus: schema.purchases.status,
+			purchaseAmount: schema.purchases.amount,
+			artistEarnings: schema.purchases.artistEarnings,
+			// Artwork details
+			artworkId: schema.artworks.id,
+			artworkTitle: schema.artworks.title,
+			artworkImages: schema.artworks.images,
+			// Buyer details
+			buyerId: schema.users.id,
+			buyerName: schema.users.name,
+			buyerEmail: schema.users.email,
+		})
+		.from(schema.orders)
+		.innerJoin(schema.purchases, eq(schema.purchases.orderId, schema.orders.id))
+		.innerJoin(
+			schema.artworks,
+			eq(schema.artworks.id, schema.purchases.artworkId),
+		)
+		.innerJoin(schema.users, eq(schema.users.id, schema.orders.buyerId))
+		.where(and(...conditions));
+
+	const [orders, totalCount] = await Promise.all([
+		baseQuery
+			.orderBy(desc(schema.orders.createdAt))
+			.limit(limit)
+			.offset(offset),
+
+		db
+			.select({
+				count: sql<number>`count(distinct ${schema.orders.id})`,
+			})
+			.from(schema.orders)
+			.innerJoin(
+				schema.purchases,
+				eq(schema.purchases.orderId, schema.orders.id),
+			)
+			.innerJoin(
+				schema.artworks,
+				eq(schema.artworks.id, schema.purchases.artworkId),
+			)
+			.where(and(...conditions)),
+	]);
+
+	const endTime = performance.now();
+	console.log(`Artist orders query took ${endTime - startTime}ms`);
+
+	return {
+		orders: orders.map((order) => ({
+			...order,
+			totalAmount: Number(order.totalAmount),
+			purchaseAmount: Number(order.purchaseAmount),
+			artistEarnings: Number(order.artistEarnings),
+		})),
+		pagination: {
+			total: Number(totalCount[0]?.count ?? 0),
+			pageCount: Math.ceil(Number(totalCount[0]?.count ?? 0) / limit),
+			page,
+			limit,
+		},
+	};
 }

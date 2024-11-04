@@ -151,9 +151,6 @@ const Artworks = () => {
 							...artwork,
 							createdAt: new Date(artwork.createdAt),
 							updatedAt: new Date(artwork.updatedAt),
-							yearCreated: artwork.yearCreated
-								? new Date(artwork.yearCreated)
-								: null,
 						}))}
 					/>
 					{data.pagination.pageCount > 0 && (

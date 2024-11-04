@@ -38,6 +38,13 @@ export const statusOptions = [
 	{ label: "Archived", value: "archived" },
 ];
 
+export const orderStatusOptions = [
+	{ label: "All Statuses", value: "all" },
+	{ label: "Pending", value: "pending" },
+	{ label: "Shipped", value: "shipped" },
+	{ label: "Delivered", value: "delivered" },
+];
+
 export const cuid = () => createId();
 
 export const convertNairaToKobo = (nairaAmount: number) => nairaAmount * 100;
