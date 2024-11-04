@@ -6,7 +6,7 @@ import type {
 } from "@/types/paystack";
 import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { db } from "./db";
-import schema from "./db/schema";
+import { default as schema } from "./db/schema";
 
 export const getUser = async (headers: Headers) => {
 	const user = await auth.api.getSession({
@@ -312,3 +312,65 @@ export const getArtistArtworks = async ({
 		},
 	};
 };
+
+interface GetArtworkWithPurchasesParams {
+	artworkId: string;
+}
+
+export async function getArtworkWithPurchases({
+	artworkId,
+}: GetArtworkWithPurchasesParams) {
+	const result = await db
+		.select({
+			// Artwork fields
+			id: schema.artworks.id,
+			title: schema.artworks.title,
+			description: schema.artworks.description,
+			price: schema.artworks.price,
+			views: schema.artworks.views,
+			tags: schema.artworks.tags,
+			quantity: schema.artworks.quantity,
+			category: schema.artworks.category,
+			dimensions: schema.artworks.dimensions,
+			medium: schema.artworks.medium,
+			status: schema.artworks.status,
+			weight: schema.artworks.weight,
+			frameType: schema.artworks.frameType,
+			images: schema.artworks.images,
+			artistId: schema.artworks.artistId,
+			createdAt: schema.artworks.createdAt,
+			// Purchase fields
+			purchases: schema.purchases,
+		})
+		.from(schema.artworks)
+		.leftJoin(
+			schema.purchases,
+			eq(schema.artworks.id, schema.purchases.artworkId),
+		)
+		.where(eq(schema.artworks.id, artworkId));
+
+	// Transform the result to group purchases
+	if (!result.length) return null;
+
+	const artwork = result[0];
+	const purchasesList = result
+		.filter((row) => row.purchases)
+		.map((row) => row.purchases);
+
+	return {
+		...artwork,
+		purchases: purchasesList,
+	};
+}
+
+export async function getArtwork({ artworkId }: { artworkId: string }) {
+	const artwork = await db
+		.select()
+		.from(schema.artworks)
+		.where(eq(schema.artworks.id, artworkId))
+		.limit(1);
+
+	if (!artwork.length) return null;
+
+	return artwork[0];
+}

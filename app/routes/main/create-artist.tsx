@@ -70,7 +70,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 	if (existingUser) {
 		return redirectWithToast("/dashboard", {
-			intent: "error",
+			intent: "info",
 			message: "You already have an artist profile",
 		});
 	}
