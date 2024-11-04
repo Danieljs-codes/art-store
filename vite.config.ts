@@ -12,7 +12,9 @@ export default defineConfig({
 			presets: [vercelPreset()],
 			routes(defineRoutes) {
 				return defineRoutes((route) => {
-					route("/", "routes/index.tsx");
+					route("/", "routes/public/layout.tsx", () => {
+						route("/", "routes/public/index.tsx");
+					});
 					route("api/auth/*", "routes/api.auth.$.ts");
 					route("api/uploadthing", "routes/api.uploadthing.ts");
 					route("", "routes/auth/layout.tsx", () => {

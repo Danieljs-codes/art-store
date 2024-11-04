@@ -19,7 +19,8 @@
       "@ui/*": ["./app/components/ui/*"],
       "@components/*": ["./app/components/*"],
       "@server/*": ["./app/server/*"],
-      "@/*": ["./app/*"]
+      "@/*": ["./app/*"],
+      "ui": ["./app/components/ui"]
     },
 
     // Vite takes care of building everything, not tsc.

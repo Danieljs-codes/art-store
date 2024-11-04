@@ -1,4 +1,3 @@
-import { Link } from "@ui/link";
 import type { MetaFunction } from "@vercel/remix";
 
 export const meta: MetaFunction = () => {
