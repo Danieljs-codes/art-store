@@ -12,9 +12,7 @@ export default function Index() {
 	return (
 		<div>
 			<h1>Welcome to Remix</h1>
-			<Link intent="primary" href="/create-artist">
-				Create Artist
-			</Link>
+			
 		</div>
 	);
 }

@@ -122,7 +122,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 		},
 	];
 
-	return json({ orders: mockOrders, pagination });
+	return json({ orders, pagination });
 };
 
 const getBadgeColor = (status: string): BadgeIntents["intent"] => {

@@ -3,3 +3,7 @@ export * from './file-trigger';
 export * from './button';
 export * from './carousel';
 export * from './tabs';
+export * from './navbar';
+export * from './container';
+export * from './sheet';
+export * from './dialog';

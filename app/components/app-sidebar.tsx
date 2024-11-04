@@ -13,8 +13,6 @@ import {
 	IconDashboard,
 	IconLogout,
 	IconMoon,
-	IconPeople,
-	IconPersonAdd,
 	IconSettings,
 	IconSun,
 } from "justd-icons";
@@ -88,7 +86,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
 						</Sidebar.Item>
 					))}
 				</Sidebar.Section>
-				<Sidebar.Section collapsible title="Team">
+				{/* <Sidebar.Section collapsible title="Team">
 					<Sidebar.Item icon={IconPeople} href="#">
 						Team Overview
 					</Sidebar.Item>
@@ -96,7 +94,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
 						Add New Member
 					</Sidebar.Item>
 					<Sidebar.Item href="#">Manage Roles</Sidebar.Item>
-				</Sidebar.Section>
+				</Sidebar.Section> */}
 			</Sidebar.Content>
 			<Sidebar.Footer className="lg:flex lg:flex-row hidden items-center">
 				<Menu>

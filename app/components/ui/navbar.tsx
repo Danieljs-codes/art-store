@@ -115,11 +115,12 @@ const navStyles = tv({
       true: "sticky z-40 top-0"
     },
     intent: {
-      floating: "bg-tertiary max-w-[1680px] mx-auto shadow-sm border rounded-xl sm:px-4",
+      floating:
+        "bg-tertiary w-full max-w-7xl 2xl:max-w-screen-2xl mx-auto shadow-sm border rounded-xl sm:px-4",
       navbar: "bg-tertiary shadow-sm border-b sm:px-6",
       inset: [
         "bg-secondary mx-auto dark:bg-bg sm:px-6",
-        "[&>div]:max-w-[1680px] lg:[&>div]:flex [&>div]:items-center [&>div]:w-full [&>div]:mx-auto"
+        "2xl:[&>div]:max-w-screen-2xl lg:[&>div]:flex [&>div]:items-center [&>div]:w-full [&>div]:mx-auto"
       ]
     }
   }
@@ -202,7 +203,7 @@ const Section = ({ className, ...props }: React.ComponentProps<"div">) => {
 
 const navItemStyles = tv({
   base: [
-    "relative lg:text-sm px-2 flex items-center gap-x-2 [&>[data-slot=icon]]:-mx-0.5 text-muted-fg outline-none forced-colors:disabled:text-[GrayText] transition-colors",
+    "relative cursor-pointer lg:text-sm px-2 flex forced-colors:outline-0 items-center gap-x-2 [&>[data-slot=icon]]:-mx-0.5 text-muted-fg outline-none forced-colors:disabled:text-[GrayText] forced-colors:transform-none transition-colors",
     "hover:text-fg focus:text-fg pressed:text-fg focus-visible:outline-1 focus-visible:outline-primary",
     "disabled:opacity-60 disabled:cursor-default",
     "[&>[data-slot=icon]]:size-4 [&>[data-slot=icon]]:shrink-0"
