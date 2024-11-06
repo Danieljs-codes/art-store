@@ -4,7 +4,7 @@ import type {
 	SubaccountResponse,
 	ValidateBankAndAccountNumberResponse,
 } from "@/types/paystack";
-import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { db } from "./db";
 import { type purchaseStatusEnum, default as schema } from "./db/schema";
 
@@ -472,4 +472,18 @@ export const getRecentlyUploadedArtworks = async () => {
 		.limit(8);
 
 	return artworks;
+};
+
+export const getPlatformStats = async () => {
+	const [artists, artworks, users] = await Promise.all([
+		db.select({ count: count() }).from(schema.artists),
+		db.select({ count: count() }).from(schema.artworks),
+		db.select({ count: count() }).from(schema.users),
+	]);
+
+	return {
+		artists: Number(artists[0]?.count ?? 0),
+		artworks: Number(artworks[0]?.count ?? 0),
+		users: Number(users[0]?.count ?? 0),
+	};
 };

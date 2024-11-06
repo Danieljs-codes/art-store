@@ -1,11 +1,16 @@
+import { ARTWORK_CATEGORIES } from "@/lib/misc";
 import { Icons } from "@components/icons";
 import { ArtworkCard } from "@components/product-card";
 import { Link, useLoaderData } from "@remix-run/react";
-import { createSampleArtworks } from "@server/mutations.server";
-import { getRecentlyUploadedArtworks } from "@server/queries.server";
-import { buttonStyles } from "@ui/button";
+import {
+	getPlatformStats,
+	getRecentlyUploadedArtworks,
+} from "@server/queries.server";
 import type { MetaFunction } from "@vercel/remix";
-import { json } from "@vercel/remix";
+import { defer } from "@vercel/remix";
+import Autoplay from "embla-carousel-autoplay";
+import { useState } from "react";
+import { Card, Carousel, buttonStyles } from "ui";
 
 export const meta: MetaFunction = () => {
 	return [
@@ -15,16 +20,16 @@ export const meta: MetaFunction = () => {
 };
 
 export const loader = async () => {
+	// Trigger the fetch early but don't wait for it
+	const stats = getPlatformStats();
 	const artworks = await getRecentlyUploadedArtworks();
-	return json({ artworks });
-};
-
-export const action = async () => {
-	await createSampleArtworks("cbtmfsmk5605x4p865a2e33i");
-	return json({ success: true });
+	return defer({ artworks, statsPromise: stats });
 };
 
 export default function Index() {
+	const [plugin] = useState(() =>
+		Autoplay({ delay: 3000, stopOnInteraction: true }),
+	);
 	const { artworks } = useLoaderData<typeof loader>();
 	return (
 		<div>
@@ -61,6 +66,51 @@ export default function Index() {
 						<ArtworkCard key={artwork.id} {...artwork} />
 					))}
 				</div>
+			</div>
+			{/* Categories Section */}
+			<div className="py-8">
+				<h2 className="text-xl font-semibold mb-2">Categories</h2>
+				<Carousel
+					onMouseEnter={plugin.stop}
+					onMouseLeave={plugin.reset}
+					plugins={[plugin]}
+					opts={{
+						loop: true,
+						align: "center",
+					}}
+				>
+					<Carousel.Content
+						items={ARTWORK_CATEGORIES.map((category) => ({
+							id: category,
+							label: category,
+						}))}
+					>
+						{(item) => (
+							<Carousel.Item id={item.id} className="md:basis-1/2 lg:basis-1/3">
+								<div className="p-1">
+									<Card className="overflow-clip">
+										<div className="relative h-40 bg-fg/5 border-b flex-1">
+											<img
+												src={`https://picsum.photos/seed/${item.id}/400/300`}
+												alt={item.label}
+												className="w-full h-full object-cover"
+											/>
+											<div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+												<span className="text-white font-semibold text-lg">
+													{item.label}
+												</span>
+											</div>
+										</div>
+									</Card>
+								</div>
+							</Carousel.Item>
+						)}
+					</Carousel.Content>
+					<Carousel.Handler>
+						<Carousel.Button slot="previous" />
+						<Carousel.Button slot="next" />
+					</Carousel.Handler>
+				</Carousel>
 			</div>
 		</div>
 	);
