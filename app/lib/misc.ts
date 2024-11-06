@@ -63,3 +63,6 @@ export const ARTWORK_CATEGORIES = [
 export const toSentenceCase = (str: string) => {
 	return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 };
+
+export const sleep = (ms: number) =>
+	new Promise((resolve) => setTimeout(resolve, ms));

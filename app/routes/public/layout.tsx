@@ -10,9 +10,11 @@ import {
 	IconDashboard,
 	IconHeadphones,
 	IconLogout,
-	IconSearch,
+	IconMoon,
 	IconSettings,
+	IconSun,
 } from "justd-icons";
+import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { Avatar, Button, Menu, Navbar, Separator, buttonStyles } from "ui";
 
@@ -27,6 +29,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 const PublicLayout = () => {
 	const navigate = useNavigate();
+	const { theme, setTheme } = useTheme();
 	const { user, artist } = useLoaderData<typeof loader>();
 
 	const logout = async () => {
@@ -38,27 +41,34 @@ const PublicLayout = () => {
 			},
 		});
 	};
+
+	const toggleTheme = () => {
+		setTheme(theme === "dark" ? "light" : "dark");
+	};
+
 	return (
 		<div>
 			<Navbar intent="inset">
 				<Navbar.Nav>
-					<Navbar.Logo href="#">
+					<Navbar.Logo href="/">
 						<Logo iconOnly classNames={{ icon: "size-7" }} />
 					</Navbar.Logo>
 					<Navbar.Section>
-						<Navbar.Item href="#">Store</Navbar.Item>
-						<Navbar.Item href="#">Mac</Navbar.Item>
-						<Navbar.Item href="#">iPad</Navbar.Item>
-						<Navbar.Item href="#">iPhone</Navbar.Item>
+						<Navbar.Item href="/artworks">Artworks</Navbar.Item>
+						<Navbar.Item href="/artists">Artists</Navbar.Item>
+						<Navbar.Item href="/orders">Orders</Navbar.Item>
+						<Navbar.Item href="/wishlist">Wishlist</Navbar.Item>
+						<Navbar.Item href="/cart">Cart</Navbar.Item>
 					</Navbar.Section>
 					<Navbar.Section className="ml-auto hidden lg:flex">
 						<div className="flex items-center gap-x-2">
 							<Button
 								appearance="plain"
 								size="square-petite"
-								aria-label="Search for products"
+								aria-label="Toggle Theme"
+								onPress={toggleTheme}
 							>
-								<IconSearch />
+								{theme === "dark" ? <IconSun /> : <IconMoon />}
 							</Button>
 							<Button
 								appearance="plain"
@@ -68,7 +78,7 @@ const PublicLayout = () => {
 								<IconBag2 />
 							</Button>
 						</div>
-						<Separator orientation="vertical" className="h-6 ml-1 mr-3" />
+						<Separator orientation="vertical" className="h-6 ml-0 mr-2" />
 						{!user && (
 							<Link
 								className={buttonStyles({
@@ -156,9 +166,10 @@ const PublicLayout = () => {
 							<Button
 								appearance="plain"
 								size="square-petite"
-								aria-label="Search for products"
+								aria-label="Toggle Theme"
+								onPress={toggleTheme}
 							>
-								<IconSearch />
+								{theme === "dark" ? <IconSun /> : <IconMoon />}
 							</Button>
 							<Button
 								appearance="plain"
@@ -167,7 +178,7 @@ const PublicLayout = () => {
 							>
 								<IconBag2 />
 							</Button>
-							<Separator orientation="vertical" className="h-6 ml-1 mr-3" />
+							<Separator orientation="vertical" className="h-6 ml-0 mr-2" />
 							{user && artist && (
 								<>
 									<Menu>

@@ -462,3 +462,14 @@ export async function getArtistOrders({
 		},
 	};
 }
+
+export const getRecentlyUploadedArtworks = async () => {
+	const artworks = await db
+		.select()
+		.from(schema.artworks)
+		.where(eq(schema.artworks.status, "PUBLISHED"))
+		.orderBy(desc(schema.artworks.createdAt))
+		.limit(8);
+
+	return artworks;
+};

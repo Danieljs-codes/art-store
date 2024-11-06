@@ -20,5 +20,5 @@ export const auth = betterAuth({
 			console.log(`Verification URL: ${url}`);
 		},
 	},
-	trustedOrigins: ["http://localhost:5173", "http://192.168.74.157:5173"],
+	trustedOrigins: ["http://localhost:5173", "http://192.168.200.157:5173"],
 });
