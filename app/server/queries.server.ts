@@ -482,8 +482,8 @@ export const getPlatformStats = async () => {
 	]);
 
 	return {
-		artists: Number(artists[0]?.count ?? 0),
-		artworks: Number(artworks[0]?.count ?? 0),
-		users: Number(users[0]?.count ?? 0),
+		totalArtists: Number(artists[0]?.count ?? 0),
+		totalArtworks: Number(artworks[0]?.count ?? 0),
+		activeUsers: Number(users[0]?.count ?? 0),
 	};
 };

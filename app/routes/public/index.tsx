@@ -1,7 +1,7 @@
 import { ARTWORK_CATEGORIES } from "@/lib/misc";
 import { Icons } from "@components/icons";
 import { ArtworkCard } from "@components/product-card";
-import { Link, useLoaderData } from "@remix-run/react";
+import { Await, Link, useLoaderData } from "@remix-run/react";
 import {
 	getPlatformStats,
 	getRecentlyUploadedArtworks,
@@ -9,7 +9,7 @@ import {
 import type { MetaFunction } from "@vercel/remix";
 import { defer } from "@vercel/remix";
 import Autoplay from "embla-carousel-autoplay";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Card, Carousel, buttonStyles } from "ui";
 
 export const meta: MetaFunction = () => {
@@ -30,7 +30,7 @@ export default function Index() {
 	const [plugin] = useState(() =>
 		Autoplay({ delay: 3000, stopOnInteraction: true }),
 	);
-	const { artworks } = useLoaderData<typeof loader>();
+	const { artworks, statsPromise } = useLoaderData<typeof loader>();
 	return (
 		<div>
 			{/* Hero Section	 */}
@@ -51,6 +51,31 @@ export default function Index() {
 							Explore Artworks <Icons.ArrowUpRight />
 						</Link>
 					</div>
+				</div>
+			</div>
+			{/* Features Section */}
+			<div className="py-12 bg-primary/5">
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto px-4">
+					<FeatureCard
+						icon={<Icons.FastDelivery className="w-6 h-6 text-primary" />}
+						title="FAST DELIVERY"
+						description="Delivery in 24 Hours Max"
+					/>
+					<FeatureCard
+						icon={<Icons.Shield className="w-6 h-6 text-primary" />}
+						title="SAFE PAYMENT"
+						description="100% Secure Payment"
+					/>
+					<FeatureCard
+						icon={<Icons.Support className="w-6 h-6 text-primary" />}
+						title="HELP CENTER"
+						description="Dedicated 24/7 Support"
+					/>
+					<FeatureCard
+						icon={<Icons.Store className="w-6 h-6 text-primary" />}
+						title="CURATED ITEMS"
+						description="From Hand Picked Sellers"
+					/>
 				</div>
 			</div>
 			{/* Recently Uploaded Artworks Section */}
@@ -112,6 +137,97 @@ export default function Index() {
 					</Carousel.Handler>
 				</Carousel>
 			</div>
+			{/* Show Platform Stats */}
+			<div className="py-8">
+				<h2 className="text-xl font-semibold mb-2">Platform Stats</h2>
+				<div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+					<Suspense
+						fallback={
+							<>
+								{Array.from({ length: 4 }).map((_, index) => (
+									<Card
+										key={`stat-card-${
+											// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+											index
+										}`}
+										className="p-4"
+									>
+										<div className="h-6 w-16 bg-fg/5 rounded animate-pulse" />
+										<div className="h-4 w-24 bg-fg/5 rounded animate-pulse mt-2" />
+									</Card>
+								))}
+							</>
+						}
+					>
+						<Await resolve={statsPromise}>
+							{(stats) => (
+								<>
+									<StatCard
+										label="Total Artists"
+										value={stats.totalArtists}
+										icon={<Icons.Artist className="w-4 h-4" />}
+									/>
+									<StatCard
+										label="Total Artworks"
+										value={stats.totalArtworks}
+										icon={<Icons.Artwork className="w-4 h-4" />}
+									/>
+									<StatCard
+										label="Active Users"
+										value={stats.activeUsers}
+										icon={<Icons.Customers className="w-4 h-4" />}
+									/>
+								</>
+							)}
+						</Await>
+					</Suspense>
+				</div>
+			</div>
 		</div>
 	);
+}
+
+function StatCard({
+	label,
+	value,
+	icon,
+}: {
+	label: string;
+	value: number;
+	icon: React.ReactNode;
+}) {
+	return (
+		<Card className="p-4">
+			<div className="flex items-center gap-2 text-muted-fg mb-2">
+				{icon}
+				<span className="text-sm font-medium">{label}</span>
+			</div>
+			<p className="text-2xl font-bold">
+				{Intl.NumberFormat("en-US", {
+					notation: "compact",
+					maximumFractionDigits: 1,
+				}).format(value)}
+			</p>
+		</Card>
+	);
+}
+
+function FeatureCard({
+	icon,
+	title,
+	description,
+}: {
+	icon: React.ReactNode
+	title: string
+	description: string
+}) {
+	return (
+		<div className="flex flex-col items-center text-center p-4">
+			<div className="mb-4 p-3 rounded-full bg-primary/10">
+				{icon}
+			</div>
+			<h3 className="font-medium text-sm tracking-wider mb-2">{title}</h3>
+			<p className="text-sm text-muted-fg">{description}</p>
+		</div>
+	)
 }
