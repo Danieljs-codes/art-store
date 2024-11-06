@@ -1,4 +1,5 @@
 import { authClient } from "@/lib/auth-client";
+import { Footer } from "@components/footer";
 import { Logo } from "@components/logo";
 import { Link, Outlet, useLoaderData, useNavigate } from "@remix-run/react";
 import { getArtist, getUser } from "@server/queries.server";
@@ -47,7 +48,7 @@ const PublicLayout = () => {
 	};
 
 	return (
-		<div>
+		<div className="min-h-screen flex flex-col">
 			<Navbar intent="inset">
 				<Navbar.Nav>
 					<Navbar.Logo href="/">
@@ -265,6 +266,10 @@ const PublicLayout = () => {
 					<Outlet />
 				</Navbar.Inset>
 			</Navbar>
+			{/* <main className="flex-1">
+				<Outlet />
+			</main> */}
+			<Footer />
 		</div>
 	);
 };
