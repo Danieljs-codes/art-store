@@ -1,10 +1,22 @@
 import { auth } from "@/lib/auth";
+import { ARTWORK_CATEGORIES } from "@/lib/misc";
 import type {
 	ListBanksResponse,
 	SubaccountResponse,
 	ValidateBankAndAccountNumberResponse,
 } from "@/types/paystack";
-import { and, count, desc, eq, gte, lte, max, min, sql } from "drizzle-orm";
+import {
+	and,
+	count,
+	desc,
+	eq,
+	gte,
+	inArray,
+	lte,
+	max,
+	min,
+	sql,
+} from "drizzle-orm";
 import { db } from "./db";
 import { type purchaseStatusEnum, default as schema } from "./db/schema";
 
@@ -488,10 +500,67 @@ export const getPlatformStats = async () => {
 	};
 };
 
-export const getArtworks = async () => {
-	const artworks = await db.select().from(schema.artworks).limit(10);
-	return artworks;
-};
+interface GetArtworksOptions {
+	categories?: string[];
+	minPrice?: number;
+	maxPrice?: number;
+	page?: number;
+	limit?: number;
+}
+
+export async function getArtworks(options: GetArtworksOptions = {}) {
+	const { categories, minPrice, maxPrice, page = 1, limit = 12 } = options;
+
+	const query = db.select().from(schema.artworks);
+
+	const conditions = [eq(schema.artworks.status, "PUBLISHED")];
+
+	if (categories?.length) {
+		const validCategories = categories.filter((category) =>
+			ARTWORK_CATEGORIES.includes(
+				category as (typeof ARTWORK_CATEGORIES)[number],
+			),
+		);
+		if (validCategories.length)
+			conditions.push(
+				inArray(
+					schema.artworks.category,
+					validCategories as (typeof ARTWORK_CATEGORIES)[number][],
+				),
+			);
+	}
+
+	if (minPrice !== undefined)
+		conditions.push(gte(schema.artworks.price, minPrice));
+
+	if (maxPrice !== undefined)
+		conditions.push(lte(schema.artworks.price, maxPrice));
+
+	const totalCount = await db
+		.select({ count: count() })
+		.from(schema.artworks)
+		.where(and(...conditions));
+
+	const artworks = await query
+		.where(and(...conditions))
+		.orderBy(desc(schema.artworks.createdAt))
+		.limit(limit)
+		.offset((page - 1) * limit);
+
+	return {
+		artworks: artworks.map((artwork) => ({
+			...artwork,
+			price: Number(artwork.price),
+			createdAt: new Date(artwork.createdAt),
+		})),
+		pagination: {
+			total: Number(totalCount[0]?.count ?? 0),
+			pageCount: Math.ceil(Number(totalCount[0]?.count ?? 0) / limit),
+			page,
+			limit,
+		},
+	};
+}
 
 export const getMinAndMaxArtworkPrice = async () => {
 	const [minResult, maxResult] = await Promise.all([
