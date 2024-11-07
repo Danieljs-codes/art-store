@@ -509,57 +509,55 @@ interface GetArtworksOptions {
 }
 
 export async function getArtworks(options: GetArtworksOptions = {}) {
-	const { categories, minPrice, maxPrice, page = 1, limit = 12 } = options;
+	const { categories, minPrice, maxPrice, page = 1, limit = 12 } = options
+	const offset = (page - 1) * limit
 
-	const query = db.select().from(schema.artworks);
-
-	const conditions = [eq(schema.artworks.status, "PUBLISHED")];
+	const query = db.select().from(schema.artworks)
+	const conditions = [eq(schema.artworks.status, "PUBLISHED")]
 
 	if (categories?.length) {
 		const validCategories = categories.filter((category) =>
-			ARTWORK_CATEGORIES.includes(
-				category as (typeof ARTWORK_CATEGORIES)[number],
-			),
-		);
-		if (validCategories.length)
+			ARTWORK_CATEGORIES.includes(category as (typeof ARTWORK_CATEGORIES)[number])
+		)
+		if (validCategories.length) {
 			conditions.push(
 				inArray(
 					schema.artworks.category,
-					validCategories as (typeof ARTWORK_CATEGORIES)[number][],
-				),
-			);
+					validCategories as (typeof ARTWORK_CATEGORIES)[number][]
+				)
+			)
+		}
 	}
 
-	if (minPrice !== undefined)
-		conditions.push(gte(schema.artworks.price, minPrice));
+	if (minPrice !== undefined) conditions.push(gte(schema.artworks.price, minPrice))
+	if (maxPrice !== undefined) conditions.push(lte(schema.artworks.price, maxPrice))
 
-	if (maxPrice !== undefined)
-		conditions.push(lte(schema.artworks.price, maxPrice));
-
-	const totalCount = await db
-		.select({ count: count() })
-		.from(schema.artworks)
-		.where(and(...conditions));
-
-	const artworks = await query
-		.where(and(...conditions))
-		.orderBy(desc(schema.artworks.createdAt))
-		.limit(limit)
-		.offset((page - 1) * limit);
+	const [artworks, totalCount] = await Promise.all([
+		query
+			.where(and(...conditions))
+			.orderBy(desc(schema.artworks.createdAt))
+			.limit(limit)
+			.offset(offset),
+		
+		db
+			.select({ count: count() })
+			.from(schema.artworks)
+			.where(and(...conditions))
+	])
 
 	return {
 		artworks: artworks.map((artwork) => ({
 			...artwork,
 			price: Number(artwork.price),
-			createdAt: new Date(artwork.createdAt),
+			createdAt: new Date(artwork.createdAt)
 		})),
 		pagination: {
 			total: Number(totalCount[0]?.count ?? 0),
 			pageCount: Math.ceil(Number(totalCount[0]?.count ?? 0) / limit),
 			page,
-			limit,
-		},
-	};
+			limit
+		}
+	}
 }
 
 export const getMinAndMaxArtworkPrice = async () => {
