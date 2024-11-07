@@ -1,7 +1,14 @@
 import { authClient } from "@/lib/auth-client";
 import { Footer } from "@components/footer";
+import { Icons } from "@components/icons";
 import { Logo } from "@components/logo";
-import { Link, Outlet, useLoaderData, useNavigate } from "@remix-run/react";
+import {
+	Link,
+	Outlet,
+	useLoaderData,
+	useLocation,
+	useNavigate,
+} from "@remix-run/react";
 import { getArtist, getUser } from "@server/queries.server";
 import type { LoaderFunctionArgs } from "@vercel/remix";
 import {
@@ -29,6 +36,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 const PublicLayout = () => {
+	const location = useLocation();
+	const pathname = location.pathname;
 	const navigate = useNavigate();
 	const { theme, setTheme } = useTheme();
 	const { user, artist } = useLoaderData<typeof loader>();
@@ -55,11 +64,24 @@ const PublicLayout = () => {
 						<Logo iconOnly classNames={{ icon: "size-7" }} />
 					</Navbar.Logo>
 					<Navbar.Section>
-						<Navbar.Item href="/artworks">Artworks</Navbar.Item>
-						<Navbar.Item href="/artists">Artists</Navbar.Item>
-						<Navbar.Item href="/orders">Orders</Navbar.Item>
-						<Navbar.Item href="/wishlist">Wishlist</Navbar.Item>
-						<Navbar.Item href="/cart">Cart</Navbar.Item>
+						<Navbar.Item href="/" isCurrent={pathname === "/"}>
+							Home
+						</Navbar.Item>
+						<Navbar.Item href="/artwork" isCurrent={pathname === "/artwork"}>
+							Artworks
+						</Navbar.Item>
+						<Navbar.Item isCurrent={pathname === "/artist"} href="/artist">
+							Artists
+						</Navbar.Item>
+						<Navbar.Item isCurrent={pathname === "/orders"} href="/orders">
+							Orders
+						</Navbar.Item>
+						<Navbar.Item isCurrent={pathname === "/wishlist"} href="/wishlist">
+							Wishlist
+						</Navbar.Item>
+						<Navbar.Item isCurrent={pathname === "/cart"} href="/cart">
+							Cart
+						</Navbar.Item>
 					</Navbar.Section>
 					<Navbar.Section className="ml-auto hidden lg:flex">
 						<div className="flex items-center gap-x-2">
@@ -84,10 +106,11 @@ const PublicLayout = () => {
 							<Link
 								className={buttonStyles({
 									intent: "secondary",
-									size: "extra-small",
+									size: "small",
 								})}
 								to={"/sign-in"}
 							>
+								<Icons.SignIn />
 								Sign in
 							</Link>
 						)}
@@ -255,6 +278,7 @@ const PublicLayout = () => {
 									})}
 									to={"/sign-in"}
 								>
+									<Icons.SignIn />
 									Sign in
 								</Link>
 							)}

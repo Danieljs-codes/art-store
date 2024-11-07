@@ -14,6 +14,8 @@ export default defineConfig({
 				return defineRoutes((route) => {
 					route("/", "routes/public/layout.tsx", () => {
 						route("/", "routes/public/index.tsx");
+						route("/artwork", "routes/public/gallery.tsx");
+						route("/artwork/:id", "routes/public/artwork-details.tsx");
 					});
 					route("api/auth/*", "routes/api.auth.$.ts");
 					route("api/uploadthing", "routes/api.uploadthing.ts");

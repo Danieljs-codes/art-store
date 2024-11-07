@@ -12,3 +12,5 @@ export * from "./separator";
 export * from "./sheet";
 export * from "./tabs";
 export * from "./tooltip";
+export * from './slider';
+export * from './field';
